@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>פורטל אוטומציית הזמנות בטוחה</title>
+  <!-- Google Fonts - Outfit & Rubik for clean typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- App Container -->
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="logo">
+        <i class="fa-solid fa-shield-halved logo-icon"></i>
+        <span>OrderSafe</span>
+      </div>
+      <nav class="nav-menu">
+        <button class="nav-btn active" id="btn-dashboard">
+          <i class="fa-solid fa-chart-line"></i> לוח בקרה והזמנות
+        </button>
+        <button class="nav-btn" id="btn-vendors">
+          <i class="fa-solid fa-truck-field"></i> ניהול ספקים
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="db-status-badge" id="db-status">
+          <span class="status-dot"></span>
+          <span id="db-status-text">מתחבר למסד נתונים...</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Topbar Header -->
+      <header class="topbar">
+        <div class="date-selector-wrapper">
+          <label for="order-date-picker"><i class="fa-regular fa-calendar-days"></i> תאריך הזמנות:</label>
+          <input type="date" id="order-date-picker" class="date-picker">
+        </div>
+        <div class="actions-header">
+          <button class="btn btn-primary" id="btn-new-order">
+            <i class="fa-solid fa-plus"></i> יצירת הזמנה חדשה
+          </button>
+        </div>
+      </header>
+
+      <!-- Dashboard View -->
+      <section class="view-section active" id="view-dashboard">
+        
+        <!-- Welcome banner -->
+        <div class="welcome-banner">
+          <h1>מערכת ניהול הזמנות בטוחה</h1>
+          <p>כל ההזמנות מבוצעות בפיקוח מלא ואישור ידני בלבד כדי למנוע טעויות.</p>
+        </div>
+
+        <div class="dashboard-grid">
+          
+          <!-- Orders Column -->
+          <div class="card orders-card">
+            <div class="card-header">
+              <h2><i class="fa-solid fa-list-check"></i> רשימת הזמנות לתאריך <span id="selected-date-label">טוען...</span></h2>
+            </div>
+            <div class="card-body">
+              <div class="orders-list" id="orders-list-container">
+                <!-- Orders will be loaded here dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Stats / Actions Log Column -->
+          <div class="card logs-card">
+            <div class="card-header">
+              <h2><i class="fa-solid fa-clipboard-list"></i> יומן פעילויות אחרונות</h2>
+            </div>
+            <div class="card-body">
+              <ul class="activity-log" id="activity-log-container">
+                <!-- Activity logs loaded here -->
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Vendors View -->
+      <section class="view-section" id="view-vendors">
+        <div class="welcome-banner">
+          <h1>ניהול ספקים במערכת</h1>
+          <p>הגדרת ספקי אתר או אימייל כולל תבניות מייל ותבניות תיקונים.</p>
+        </div>
+
+        <div class="vendors-layout">
+          <!-- Vendors List Card -->
+          <div class="card vendors-list-card">
+            <div class="card-header">
+              <h2><i class="fa-solid fa-truck-moving"></i> ספקים פעילים</h2>
+              <button class="btn btn-secondary btn-sm" id="btn-add-vendor-modal">
+                <i class="fa-solid fa-plus"></i> ספק חדש
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="vendors-grid" id="vendors-grid-container">
+                <!-- Vendors loaded dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- Modal: Create/Edit Order -->
+  <div class="modal" id="modal-order">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="order-modal-title">הזמנה חדשה</h3>
+        <button class="close-modal-btn" id="btn-close-order-modal">&times;</button>
+      </div>
+      <form id="order-form">
+        <input type="hidden" id="order-id-input">
+        <div class="form-group">
+          <label for="order-vendor-select">בחר ספק:</label>
+          <select id="order-vendor-select" class="form-control" required>
+            <!-- Loaded dynamically -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label>פריטים להזמנה:</label>
+          <div class="items-editor-container">
+            <div class="items-list" id="order-items-list-container">
+              <!-- Edit fields for items will load here -->
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm mt-2" id="btn-add-item-row">
+              <i class="fa-solid fa-plus"></i> הוסף פריט
+            </button>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-order">ביטול</button>
+          <button type="submit" class="btn btn-primary">שמור טיוטה</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Create/Edit Vendor -->
+  <div class="modal" id="modal-vendor">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h3 id="vendor-modal-title">הוספת ספק חדש</h3>
+        <button class="close-modal-btn" id="btn-close-vendor-modal">&times;</button>
+      </div>
+      <form id="vendor-form">
+        <input type="hidden" id="vendor-id-input">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="vendor-name-input">שם ספק:</label>
+            <input type="text" id="vendor-name-input" class="form-control" placeholder="לדוגמה: ירקות ופירות שדה" required>
+          </div>
+          <div class="form-group">
+            <label for="vendor-type-select">שיטת הזמנה:</label>
+            <select id="vendor-type-select" class="form-control" required>
+              <option value="email">שליחת אימייל</option>
+              <option value="website">אוטומציית אתר</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Email Options Section -->
+        <div id="vendor-email-options" class="vendor-sub-section">
+          <div class="form-group">
+            <label for="vendor-email-input">כתובת אימייל להזמנות:</label>
+            <input type="email" id="vendor-email-input" class="form-control" placeholder="orders@vendor.co.il">
+          </div>
+          <div class="form-group">
+            <label for="vendor-email-template">תבנית למייל הזמנה חדשה:</label>
+            <textarea id="vendor-email-template" class="form-control text-area-large" placeholder="השתמש ב-{{date}} ו-{{items}} כממלאי מקום..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="vendor-correction-template">תבנית למייל עדכון/תיקון כמויות:</label>
+            <textarea id="vendor-correction-template" class="form-control text-area-large" placeholder="השתמש ב-{{date}}, {{items}} ו-{{changes}} כממלאי מקום..."></textarea>
+          </div>
+        </div>
+
+        <!-- Website Options Section -->
+        <div id="vendor-website-options" class="vendor-sub-section hidden">
+          <div class="form-group">
+            <label for="vendor-website-url">כתובת אתר הספק:</label>
+            <input type="url" id="vendor-website-url" class="form-control" placeholder="https://orders.vendor.co.il">
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="vendor-username">שם משתמש:</label>
+              <input type="text" id="vendor-username" class="form-control" placeholder="username">
+            </div>
+            <div class="form-group">
+              <label for="vendor-password">סיסמה:</label>
+              <input type="password" id="vendor-password" class="form-control" placeholder="••••••••">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-vendor">ביטול</button>
+          <button type="submit" class="btn btn-primary">שמור ספק</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Safety Dispatch Modal (Human-In-The-Loop Gate) -->
+  <div class="modal" id="modal-safety-confirm">
+    <div class="modal-content modal-lg safety-modal">
+      <div class="modal-header safety-header">
+        <h3><i class="fa-solid fa-triangle-exclamation"></i> שער בטיחות: אישור שיגור הזמנה</h3>
+        <button class="close-modal-btn" id="btn-close-safety-modal">&times;</button>
+      </div>
+      <div class="safety-body">
+        <div class="safety-warning-banner">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>אנא קרא בעיון את הפרטים מטה. לחיצה על "אשר ושגר" תבצע את הפעולה ישירות ברשת.</span>
+        </div>
+
+        <!-- Email Details Confirmation -->
+        <div id="safety-email-details" class="hidden">
+          <div class="preview-field">
+            <span class="preview-label">נמען (To):</span>
+            <span class="preview-value" id="preview-email-to"></span>
+          </div>
+          <div class="preview-field">
+            <span class="preview-label">נושא (Subject):</span>
+            <span class="preview-value text-bold" id="preview-email-subject"></span>
+          </div>
+          <div class="preview-content-box">
+            <span class="preview-label">תוכן המייל (Body Preview):</span>
+            <pre class="email-body-preview" id="preview-email-body"></pre>
+          </div>
+        </div>
+
+        <!-- Website Automation Confirmation -->
+        <div id="safety-website-details" class="hidden">
+          <div class="preview-field">
+            <span class="preview-label">כתובת אתר היעד:</span>
+            <span class="preview-value" id="preview-web-url"></span>
+          </div>
+          <div class="preview-field">
+            <span class="preview-label">פרטי התחברות:</span>
+            <span class="preview-value" id="preview-web-auth"></span>
+          </div>
+          <div class="preview-content-box">
+            <span class="preview-label">שלבי ביצוע סימולטור אוטומציה:</span>
+            <ul class="steps-preview-list" id="preview-web-steps">
+              <!-- Steps loaded dynamically -->
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions safety-actions">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-safety">ביטול ושינוי הזמנה</button>
+        <button type="button" class="btn btn-danger-glowing" id="btn-confirm-safety-dispatch">
+          <i class="fa-solid fa-paper-plane"></i> אשר ושגר הזמנה
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

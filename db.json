@@ -1,0 +1,58 @@
+{
+  "vendors": [
+    {
+      "id": "v_1",
+      "name": "ירקות ופירות שדה",
+      "type": "email",
+      "email": "orders@fieldveggies.co.il",
+      "websiteUrl": "",
+      "username": "",
+      "password": "",
+      "emailTemplate": "שלום,\nאנא ספקו עבורנו את הסחורה הבאה לתאריך {{date}}:\n\n{{items}}\n\nבתודה,\nמחלקת הזמנות",
+      "correctionTemplate": "שלום,\nנא לשים לב - בוצע תיכון כמויות להזמנה של תאריך {{date}}:\n\nהשינויים:\n{{changes}}\n\nהרשימה המעודכנת המלאה:\n{{items}}\n\nתודה וסליחה על השינוי מראש."
+    },
+    {
+      "id": "v_2",
+      "name": "מאפיית הכהנים",
+      "type": "website",
+      "email": "",
+      "websiteUrl": "https://bakery-portal.co.il/login",
+      "username": "cohen_bakery_user",
+      "password": "SecretPassword123",
+      "emailTemplate": "",
+      "correctionTemplate": ""
+    }
+  ],
+  "orders": [
+    {
+      "id": "o_1",
+      "date": "2026-06-24",
+      "vendorId": "v_1",
+      "vendorName": "ירקות ופירות שדה",
+      "status": "completed",
+      "items": [
+        { "name": "עגבניות", "quantity": 15, "unit": "ק\"ג" },
+        { "name": "מלפפונים", "quantity": 10, "unit": "ק\"ג" },
+        { "name": "בצל יבש", "quantity": 5, "unit": "שק" }
+      ],
+      "actionsLog": [
+        { "timestamp": "2026-06-24T08:00:00.000Z", "action": "הזמנה נוצרה כטיוטה" },
+        { "timestamp": "2026-06-24T08:15:00.000Z", "action": "אושר ונשלח מייל הזמנה לכתובת orders@fieldveggies.co.il" }
+      ]
+    },
+    {
+      "id": "o_2",
+      "date": "2026-06-24",
+      "vendorId": "v_2",
+      "vendorName": "מאפיית הכהנים",
+      "status": "pending_approval",
+      "items": [
+        { "name": "לחמניות המבורגר", "quantity": 120, "unit": "יחידות" },
+        { "name": "לחם פרוס", "quantity": 30, "unit": "יחידות" }
+      ],
+      "actionsLog": [
+        { "timestamp": "2026-06-24T08:10:00.000Z", "action": "הזמנה נוצרה וממתינה לאישור" }
+      ]
+    }
+  ]
+}
