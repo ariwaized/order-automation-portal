@@ -1,57 +1,100 @@
 {
   "vendors": [
     {
-      "id": "v_1",
-      "name": "ירקות ופירות שדה",
+      "id": "v_berman",
+      "name": "ברמן",
+      "category": "bakery",
+      "type": "website",
+      "email": "",
+      "websiteUrl": "https://berman.co.il/portal",
+      "username": "berman_user",
+      "password": "PasswordBerman1",
+      "emailTemplate": "",
+      "correctionTemplate": ""
+    },
+    {
+      "id": "v_einbar",
+      "name": "עין-בר",
+      "category": "bakery",
+      "type": "website",
+      "email": "",
+      "websiteUrl": "https://ein-bar.co.il/login",
+      "username": "einbar_user",
+      "password": "PasswordEinbar2",
+      "emailTemplate": "",
+      "correctionTemplate": ""
+    },
+    {
+      "id": "v_bikurim",
+      "name": "מאפיית ביכורים",
+      "category": "bakery",
       "type": "email",
-      "email": "orders@fieldveggies.co.il",
+      "email": "orders@bikurim-bakery.co.il",
       "websiteUrl": "",
       "username": "",
       "password": "",
-      "emailTemplate": "שלום,\nאנא ספקו עבורנו את הסחורה הבאה לתאריך {{date}}:\n\n{{items}}\n\nבתודה,\nמחלקת הזמנות",
-      "correctionTemplate": "שלום,\nנא לשים לב - בוצע תיכון כמויות להזמנה של תאריך {{date}}:\n\nהשינויים:\n{{changes}}\n\nהרשימה המעודכנת המלאה:\n{{items}}\n\nתודה וסליחה על השינוי מראש."
+      "emailTemplate": "שלום לצוות ביכורים,\nאנא ספקו עבורנו את הלחמים הבאים לתאריך {{date}}:\n\n{{items}}\n\nבברכה,\nמחלקת הזמנות",
+      "correctionTemplate": "שלום לצוות ביכורים,\nבוצע תיכון כמויות להזמנה של תאריך {{date}}:\n\nהשינויים:\n{{changes}}\n\nהרשימה המעודכנת:\n{{items}}"
     },
     {
-      "id": "v_2",
-      "name": "מאפיית הכהנים",
+      "id": "v_ran",
+      "name": "ראן",
+      "category": "vegetables",
       "type": "website",
       "email": "",
-      "websiteUrl": "https://bakery-portal.co.il/login",
-      "username": "cohen_bakery_user",
-      "password": "SecretPassword123",
+      "websiteUrl": "https://ran-veggies.co.il/login",
+      "username": "ran_veggies_user",
+      "password": "RanPassword123",
       "emailTemplate": "",
       "correctionTemplate": ""
+    },
+    {
+      "id": "v_yanki",
+      "name": "יענקי פרידמן",
+      "category": "vegetables",
+      "type": "email",
+      "email": "yanki.friedman@gmail.com",
+      "websiteUrl": "",
+      "username": "",
+      "password": "",
+      "emailTemplate": "שלום יענקי,\nלהלן ההזמנה לתאריך {{date}}:\n\n{{items}}\n\nתודה,\nהזמנות",
+      "correctionTemplate": "שלום יענקי,\nנא לעדכן את הכמויות הבאות להזמנה של {{date}}:\n\nהפרשים:\n{{changes}}\n\nסך הכל פריטים להזמנה:\n{{items}}"
     }
   ],
   "orders": [
     {
-      "id": "o_1",
+      "id": "o_yanki_1",
       "date": "2026-06-24",
-      "vendorId": "v_1",
-      "vendorName": "ירקות ופירות שדה",
+      "vendorId": "v_yanki",
+      "vendorName": "יענקי פרידמן",
+      "category": "vegetables",
       "status": "completed",
       "items": [
-        { "name": "עגבניות", "quantity": 15, "unit": "ק\"ג" },
-        { "name": "מלפפונים", "quantity": 10, "unit": "ק\"ג" },
-        { "name": "בצל יבש", "quantity": 5, "unit": "שק" }
+        { "name": "עגבניות מובחרות", "quantity": 20, "unit": "ק\"ג" },
+        { "name": "מלפפון סלטים", "quantity": 15, "unit": "ק\"ג" }
+      ],
+      "dispatchedItems": [
+        { "name": "עגבניות מובחרות", "quantity": 20, "unit": "ק\"ג" },
+        { "name": "מלפפון סלטים", "quantity": 15, "unit": "ק\"ג" }
       ],
       "actionsLog": [
         { "timestamp": "2026-06-24T08:00:00.000Z", "action": "הזמנה נוצרה כטיוטה" },
-        { "timestamp": "2026-06-24T08:15:00.000Z", "action": "אושר ונשלח מייל הזמנה לכתובת orders@fieldveggies.co.il" }
+        { "timestamp": "2026-06-24T08:10:00.000Z", "action": "נשלח מייל בהצלחה לכתובת yanki.friedman@gmail.com" }
       ]
     },
     {
-      "id": "o_2",
+      "id": "o_berman_1",
       "date": "2026-06-24",
-      "vendorId": "v_2",
-      "vendorName": "מאפיית הכהנים",
+      "vendorId": "v_berman",
+      "vendorName": "ברמן",
+      "category": "bakery",
       "status": "pending_approval",
       "items": [
-        { "name": "לחמניות המבורגר", "quantity": 120, "unit": "יחידות" },
-        { "name": "לחם פרוס", "quantity": 30, "unit": "יחידות" }
+        { "name": "לחם אחיד פרוס", "quantity": 50, "unit": "יחידות" },
+        { "name": "חלות שבת", "quantity": 20, "unit": "יחידות" }
       ],
       "actionsLog": [
-        { "timestamp": "2026-06-24T08:10:00.000Z", "action": "הזמנה נוצרה וממתינה לאישור" }
+        { "timestamp": "2026-06-24T08:15:00.000Z", "action": "הזמנה נוצרה וממתינה לאישור" }
       ]
     }
   ]

@@ -867,3 +867,36 @@ textarea.form-control.text-area-large {
 .hidden {
   display: none !important;
 }
+
+/* Category Filters */
+.category-filters-container {
+  margin-bottom: 24px;
+}
+
+.category-filters {
+  display: flex;
+  gap: 12px;
+}
+
+.category-filters .filter-btn {
+  font-weight: 500;
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.category-filters .filter-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.category-filters .filter-btn.active {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05));
+  border-color: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15);
+}
+

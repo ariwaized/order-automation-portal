@@ -64,7 +64,17 @@
           <p>כל ההזמנות מבוצעות בפיקוח מלא ואישור ידני בלבד כדי למנוע טעויות.</p>
         </div>
 
+        <!-- Dashboard Category Filters -->
+        <div class="category-filters-container">
+          <div class="category-filters" id="dashboard-filters">
+            <button class="btn filter-btn active" data-category="all">הכל</button>
+            <button class="btn filter-btn" data-category="bakery"><i class="fa-solid fa-bread-slice"></i> מאפים</button>
+            <button class="btn filter-btn" data-category="vegetables"><i class="fa-solid fa-carrot"></i> ירקות</button>
+          </div>
+        </div>
+
         <div class="dashboard-grid">
+
           
           <!-- Orders Column -->
           <div class="card orders-card">
@@ -100,7 +110,17 @@
           <p>הגדרת ספקי אתר או אימייל כולל תבניות מייל ותבניות תיקונים.</p>
         </div>
 
+        <!-- Vendor Category Filters -->
+        <div class="category-filters-container">
+          <div class="category-filters" id="vendor-filters">
+            <button class="btn filter-btn active" data-category="all">הכל</button>
+            <button class="btn filter-btn" data-category="bakery"><i class="fa-solid fa-bread-slice"></i> מאפים</button>
+            <button class="btn filter-btn" data-category="vegetables"><i class="fa-solid fa-carrot"></i> ירקות</button>
+          </div>
+        </div>
+
         <div class="vendors-layout">
+
           <!-- Vendors List Card -->
           <div class="card vendors-list-card">
             <div class="card-header">
@@ -165,11 +185,11 @@
       </div>
       <form id="vendor-form">
         <input type="hidden" id="vendor-id-input">
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="vendor-name-input">שם ספק:</label>
-            <input type="text" id="vendor-name-input" class="form-control" placeholder="לדוגמה: ירקות ופירות שדה" required>
-          </div>
+        <div class="form-group" style="padding: 0 24px; margin-top: 24px;">
+          <label for="vendor-name-input">שם ספק:</label>
+          <input type="text" id="vendor-name-input" class="form-control" placeholder="לדוגמה: ירקות ופירות שדה" required>
+        </div>
+        <div class="form-grid" style="margin-top: 0;">
           <div class="form-group">
             <label for="vendor-type-select">שיטת הזמנה:</label>
             <select id="vendor-type-select" class="form-control" required>
@@ -177,7 +197,15 @@
               <option value="website">אוטומציית אתר</option>
             </select>
           </div>
+          <div class="form-group">
+            <label for="vendor-category-select">קטגוריה:</label>
+            <select id="vendor-category-select" class="form-control" required>
+              <option value="bakery">מאפים</option>
+              <option value="vegetables">ירקות</option>
+            </select>
+          </div>
         </div>
+
 
         <!-- Email Options Section -->
         <div id="vendor-email-options" class="vendor-sub-section">

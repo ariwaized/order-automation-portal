@@ -3,6 +3,9 @@ let vendors = [];
 let orders = [];
 let selectedDate = '';
 let currentActiveOrderId = null;
+let currentCategoryFilter = 'all';
+let currentVendorCategoryFilter = 'all';
+
 
 // DOM Elements
 const dbStatus = document.getElementById('db-status');
@@ -138,29 +141,72 @@ async function loadOrders() {
 
 function populateVendorSelect() {
   orderVendorSelect.innerHTML = '<option value="" disabled selected>בחר ספק מהרשימה...</option>';
-  vendors.forEach(v => {
-    const option = document.createElement('option');
-    option.value = v.id;
-    option.textContent = `${v.name} (${v.type === 'email' ? 'אימייל' : 'אתר ספק'})`;
-    orderVendorSelect.appendChild(option);
-  });
+  
+  const bakeries = vendors.filter(v => v.category === 'bakery');
+  const vegetables = vendors.filter(v => v.category === 'vegetables');
+  const others = vendors.filter(v => v.category !== 'bakery' && v.category !== 'vegetables');
+
+  if (bakeries.length > 0) {
+    const group = document.createElement('optgroup');
+    group.label = 'מאפים';
+    bakeries.forEach(v => {
+      const option = document.createElement('option');
+      option.value = v.id;
+      option.textContent = v.name;
+      group.appendChild(option);
+    });
+    orderVendorSelect.appendChild(group);
+  }
+
+  if (vegetables.length > 0) {
+    const group = document.createElement('optgroup');
+    group.label = 'ירקות';
+    vegetables.forEach(v => {
+      const option = document.createElement('option');
+      option.value = v.id;
+      option.textContent = v.name;
+      group.appendChild(option);
+    });
+    orderVendorSelect.appendChild(group);
+  }
+
+  if (others.length > 0) {
+    const group = document.createElement('optgroup');
+    group.label = 'אחר';
+    others.forEach(v => {
+      const option = document.createElement('option');
+      option.value = v.id;
+      option.textContent = v.name;
+      group.appendChild(option);
+    });
+    orderVendorSelect.appendChild(group);
+  }
 }
+
 
 function renderOrders() {
   ordersListContainer.innerHTML = '';
   
-  if (orders.length === 0) {
+  const filteredOrders = currentCategoryFilter === 'all'
+    ? orders
+    : orders.filter(order => {
+        const vendor = vendors.find(v => v.id === order.vendorId);
+        return (order.category || (vendor ? vendor.category : '')) === currentCategoryFilter;
+      });
+
+  if (filteredOrders.length === 0) {
     ordersListContainer.innerHTML = `
       <div class="empty-state">
         <i class="fa-solid fa-folder-open"></i>
-        <p>אין הזמנות מתוכננות לתאריך זה.</p>
+        <p>אין הזמנות מתוכננות בקטגוריה זו לתאריך זה.</p>
         <button class="btn btn-secondary btn-sm mt-2" onclick="openNewOrderModal()">צור הזמנה עכשיו</button>
       </div>
     `;
     return;
   }
 
-  orders.forEach(order => {
+  filteredOrders.forEach(order => {
+
     const card = document.createElement('div');
     card.className = 'order-item-card';
 
@@ -269,17 +315,22 @@ function renderActivityLogs() {
 function renderVendors() {
   vendorsGridContainer.innerHTML = '';
   
-  if (vendors.length === 0) {
+  const filteredVendors = currentVendorCategoryFilter === 'all'
+    ? vendors
+    : vendors.filter(v => v.category === currentVendorCategoryFilter);
+
+  if (filteredVendors.length === 0) {
     vendorsGridContainer.innerHTML = `
       <div class="empty-state" style="grid-column: 1 / -1;">
         <i class="fa-solid fa-truck-field"></i>
-        <p>לא הוגדרו ספקים במערכת.</p>
+        <p>לא נמצאו ספקים בקטגוריה זו.</p>
       </div>
     `;
     return;
   }
 
-  vendors.forEach(v => {
+  filteredVendors.forEach(v => {
+
     const card = document.createElement('div');
     card.className = 'vendor-card';
 
@@ -339,6 +390,28 @@ function setupEventListeners() {
     selectedDateLabel.textContent = formatDateHebrew(selectedDate);
     loadOrders();
   });
+
+  // Category Filters Event Listeners
+  const dbFilterBtns = document.querySelectorAll('#dashboard-filters .filter-btn');
+  dbFilterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      dbFilterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentCategoryFilter = btn.getAttribute('data-category');
+      renderOrders();
+    });
+  });
+
+  const vendorFilterBtns = document.querySelectorAll('#vendor-filters .filter-btn');
+  vendorFilterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      vendorFilterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentVendorCategoryFilter = btn.getAttribute('data-category');
+      renderVendors();
+    });
+  });
+
 
   // Open Modals
   btnNewOrder.addEventListener('click', () => openNewOrderModal());
@@ -448,9 +521,11 @@ async function handleOrderSubmit(e) {
     date: selectedDate,
     vendorId,
     vendorName: vendor ? vendor.name : 'ספק לא ידוע',
+    category: vendor ? vendor.category : 'other',
     items,
     status: existingOrder ? existingOrder.status : 'pending_approval'
   };
+
 
   // Add action log details
   if (existingOrder) {
@@ -502,9 +577,11 @@ function openNewVendorModal() {
   vendorModalTitle.textContent = 'הוספת ספק חדש';
   vendorIdInput.value = '';
   vendorForm.reset();
+  document.getElementById('vendor-category-select').value = 'bakery';
   toggleVendorTypeFields('email');
   modalVendor.classList.add('active');
 }
+
 
 function openEditVendorModal(vendorId) {
   const vendor = vendors.find(v => v.id === vendorId);
@@ -516,8 +593,10 @@ function openEditVendorModal(vendorId) {
   vendorTypeSelect.value = vendor.type;
   
   toggleVendorTypeFields(vendor.type);
+  document.getElementById('vendor-category-select').value = vendor.category || 'bakery';
 
   if (vendor.type === 'email') {
+
     vendorEmailInput.value = vendor.email || '';
     vendorEmailTemplate.value = vendor.emailTemplate || '';
     vendorCorrectionTemplate.value = vendor.correctionTemplate || '';
@@ -550,10 +629,13 @@ async function handleVendorSubmit(e) {
   const vendorId = vendorIdInput.value;
   const type = vendorTypeSelect.value;
 
+  const category = document.getElementById('vendor-category-select').value;
+
   const vendorPayload = {
     id: vendorId || undefined,
     name: vendorNameInput.value,
     type,
+    category,
     email: type === 'email' ? vendorEmailInput.value : '',
     emailTemplate: type === 'email' ? vendorEmailTemplate.value : '',
     correctionTemplate: type === 'email' ? vendorCorrectionTemplate.value : '',
@@ -561,6 +643,7 @@ async function handleVendorSubmit(e) {
     username: type === 'website' ? vendorUsername.value : '',
     password: type === 'website' ? vendorPassword.value : ''
   };
+
 
   try {
     const res = await fetch('/api/vendors', {
