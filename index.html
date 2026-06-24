@@ -155,13 +155,14 @@
       </div>
       <form id="order-form">
         <input type="hidden" id="order-id-input">
-        <div class="form-group">
+        
+        <div class="form-group" id="vendor-selector-group">
           <label>בחר ספק (לחץ לבחירת חברה):</label>
           <div class="vendor-buttons-grid" id="order-vendor-buttons">
             <!-- Loaded dynamically as buttons -->
           </div>
-          <input type="hidden" id="order-vendor-id-input" required>
         </div>
+        <input type="hidden" id="order-vendor-id-input" required>
         
         <div class="form-group">
           <label id="catalog-label-text">קטלוג מוצרים קבועים (מלא כמויות לפריטים להזמנה):</label>
@@ -181,9 +182,11 @@
             </button>
           </div>
         </div>
+        
         <div class="modal-actions">
           <button type="button" class="btn btn-secondary" id="btn-cancel-order">ביטול</button>
-          <button type="submit" class="btn btn-primary">שמור טיוטה</button>
+          <button type="submit" class="btn btn-secondary" id="btn-save-draft" style="border-color: var(--color-primary); color: var(--color-primary);">שמור טיוטה</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-and-dispatch">שגר הזמנה</button>
         </div>
       </form>
     </div>

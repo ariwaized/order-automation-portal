@@ -473,6 +473,7 @@ let selectedDate = '';
 let currentActiveOrderId = null;
 let currentCategoryFilter = 'all';
 let currentVendorCategoryFilter = 'all';
+let lastSubmitType = 'dispatch';
 
 // DOM Elements
 const dbStatus = document.getElementById('db-status');
@@ -864,6 +865,13 @@ function setupEventListeners() {
   btnAddItemRow.addEventListener('click', () => addItemRow());
 
   // Form Submissions
+  document.getElementById('btn-save-draft').addEventListener('click', () => {
+    lastSubmitType = 'draft';
+  });
+  document.getElementById('btn-save-and-dispatch').addEventListener('click', () => {
+    lastSubmitType = 'dispatch';
+  });
+
   orderForm.addEventListener('submit', handleOrderSubmit);
   vendorForm.addEventListener('submit', handleVendorSubmit);
 
@@ -914,6 +922,7 @@ function openNewOrderModal() {
   orderForm.reset();
   document.getElementById('order-vendor-id-input').value = '';
   
+  document.getElementById('vendor-selector-group').style.display = 'block';
   renderOrderVendorButtons(null);
   document.getElementById('catalog-items-container').innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 10px;">בחר חברה למעלה כדי להציג את רשימת המוצרים שלה.</div>';
   orderItemsListContainer.innerHTML = '';
@@ -929,6 +938,7 @@ function openEditOrderModal(orderId) {
   orderIdInput.value = order.id;
   document.getElementById('order-vendor-id-input').value = order.vendorId;
   
+  document.getElementById('vendor-selector-group').style.display = 'none';
   renderOrderVendorButtons(order.vendorId, order.items);
   loadVendorCatalog(order.vendorId, order.items);
 
@@ -955,6 +965,7 @@ function openNewOrderForVendor(vendorId) {
   orderForm.reset();
   document.getElementById('order-vendor-id-input').value = vendor.id;
   
+  document.getElementById('vendor-selector-group').style.display = 'none';
   renderOrderVendorButtons(vendor.id);
   loadVendorCatalog(vendor.id);
   orderItemsListContainer.innerHTML = '';
@@ -1033,6 +1044,7 @@ async function handleOrderSubmit(e) {
   }
 
   const existingOrder = orders.find(o => o.id === orderId);
+  const targetStatus = (lastSubmitType === 'draft') ? 'draft' : 'pending_approval';
 
   const orderPayload = {
     id: orderId || undefined,
@@ -1041,14 +1053,16 @@ async function handleOrderSubmit(e) {
     vendorName: vendor ? vendor.name : 'ספק לא ידוע',
     category: vendor ? vendor.category : 'other',
     items,
-    status: existingOrder ? existingOrder.status : 'pending_approval'
+    status: targetStatus
   };
 
   if (existingOrder) {
     orderPayload.actionsLog = existingOrder.actionsLog || [];
     orderPayload.actionsLog.push({
       timestamp: new Date().toISOString(),
-      action: 'בוצע עדכון כמויות בהזמנה (ממתין לשיגור עדכון)'
+      action: lastSubmitType === 'draft' 
+        ? 'בוצע עדכון כמויות בהזמנה (נשמר כטיוטה)' 
+        : 'בוצע עדכון כמויות בהזמנה (ממתין לשיגור עדכון)'
     });
     if (existingOrder.dispatchedItems) {
       orderPayload.dispatchedItems = existingOrder.dispatchedItems;
@@ -1056,14 +1070,18 @@ async function handleOrderSubmit(e) {
   } else {
     orderPayload.actionsLog = [{
       timestamp: new Date().toISOString(),
-      action: 'הזמנה נוצרה'
+      action: lastSubmitType === 'draft' ? 'הזמנה נוצרה כטיוטה' : 'הזמנה נוצרה וממתינה לאישור'
     }];
   }
 
   try {
-    await dbOps.saveOrder(orderPayload);
+    const saved = await dbOps.saveOrder(orderPayload);
     modalOrder.classList.remove('active');
-    refreshAllData();
+    await refreshAllData();
+    
+    if (lastSubmitType === 'dispatch') {
+      prepareDispatch(saved.id);
+    }
   } catch (err) {
     console.error('Error saving order:', err);
     alert('שגיאה בשמירת ההזמנה');
