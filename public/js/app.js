@@ -147,88 +147,120 @@ async function loadOrders() {
 function renderOrders() {
   ordersListContainer.innerHTML = '';
   
-  const filteredOrders = currentCategoryFilter === 'all'
-    ? orders
-    : orders.filter(order => {
-        const vendor = vendors.find(v => v.id === order.vendorId);
-        return (order.category || (vendor ? vendor.category : '')) === currentCategoryFilter;
-      });
+  // Group vendors by category
+  const categories = {
+    bakery: { name: 'מאפים', icon: 'fa-bread-slice', vendors: [] },
+    vegetables: { name: 'ירקות', icon: 'fa-carrot', vendors: [] }
+  };
 
-  if (filteredOrders.length === 0) {
+  // Filter vendors based on category filter
+  vendors.forEach(v => {
+    const cat = v.category || 'other';
+    if (currentCategoryFilter === 'all' || cat === currentCategoryFilter) {
+      if (!categories[cat]) {
+        categories[cat] = { name: 'אחר', icon: 'fa-truck', vendors: [] };
+      }
+      categories[cat].vendors.push(v);
+    }
+  });
+
+  // Render categories and their vendor cards
+  let hasAnyContent = false;
+  for (const [key, cat] of Object.entries(categories)) {
+    if (cat.vendors.length === 0) continue;
+    hasAnyContent = true;
+
+    const section = document.createElement('div');
+    section.className = 'dashboard-category-section';
+    section.innerHTML = `<h3 class="category-section-title"><i class="fa-solid ${cat.icon}"></i> ${cat.name}</h3>`;
+
+    const grid = document.createElement('div');
+    grid.className = 'dashboard-vendor-cards-grid';
+
+    cat.vendors.forEach(vendor => {
+      // Find if there is an order for this vendor on selectedDate
+      const order = orders.find(o => o.vendorId === vendor.id);
+      
+      const card = document.createElement('div');
+      card.className = `vendor-order-card ${order ? 'has-order' : 'no-order'}`;
+      
+      let statusBadge = '<span class="badge badge-no-order">לא הוזמן</span>';
+      let itemsPreview = 'אין מוצרים בהזמנה לתאריך זה';
+      let actionButtons = `
+        <button class="btn btn-primary btn-sm" onclick="openNewOrderForVendor('${vendor.id}')">
+          <i class="fa-solid fa-plus"></i> צור הזמנה
+        </button>
+      `;
+
+      if (order) {
+        const badgeClass = `badge-${order.status}`;
+        let badgeText = '';
+        switch (order.status) {
+          case 'draft': badgeText = 'טיוטה'; break;
+          case 'pending_approval': badgeText = 'ממתין לאישור'; break;
+          case 'completed': badgeText = 'בוצע בהצלחה'; break;
+          case 'correction_sent': badgeText = 'נשלח תיקון'; break;
+        }
+        statusBadge = `<span class="badge ${badgeClass}"><span class="status-dot"></span> ${badgeText}</span>`;
+        
+        itemsPreview = order.items.map(i => `${i.name}: ${i.quantity} ${i.unit || ''}`).join(', ');
+
+        let dispatchBtnHTML = '';
+        if (order.status === 'pending_approval') {
+          dispatchBtnHTML = `
+            <button class="btn btn-primary btn-sm" onclick="prepareDispatch('${order.id}')">
+              <i class="fa-solid fa-paper-plane"></i> שגר
+            </button>
+          `;
+        } else if (order.status === 'completed' || order.status === 'correction_sent') {
+          dispatchBtnHTML = `
+            <button class="btn btn-secondary btn-sm" onclick="prepareDispatch('${order.id}')">
+              <i class="fa-solid fa-rotate"></i> עדכן/תקן
+            </button>
+          `;
+        }
+
+        actionButtons = `
+          <button class="btn btn-secondary btn-sm" onclick="openEditOrderModal('${order.id}')">
+            <i class="fa-solid fa-pen"></i> ערוך
+          </button>
+          ${dispatchBtnHTML}
+          <button class="btn btn-secondary btn-sm text-danger" style="color: var(--color-danger); border-color: rgba(239,68,68,0.15);" onclick="deleteOrder('${order.id}')">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        `;
+      }
+
+      card.innerHTML = `
+        <div class="vendor-card-top">
+          <span class="vendor-card-name">${vendor.name}</span>
+          ${statusBadge}
+        </div>
+        <div class="vendor-card-middle">
+          <p class="vendor-card-items-preview">${itemsPreview}</p>
+        </div>
+        <div class="vendor-card-bottom">
+          ${actionButtons}
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+
+    section.appendChild(grid);
+    ordersListContainer.appendChild(section);
+  }
+
+  if (!hasAnyContent) {
     ordersListContainer.innerHTML = `
       <div class="empty-state">
         <i class="fa-solid fa-folder-open"></i>
-        <p>אין הזמנות מתוכננות בקטגוריה זו לתאריך זה.</p>
-        <button class="btn btn-secondary btn-sm mt-2" onclick="openNewOrderModal()">צור הזמנה עכשיו</button>
+        <p>אין ספקים או קטגוריות להצגה.</p>
       </div>
     `;
-    return;
   }
-
-  filteredOrders.forEach(order => {
-
-    const card = document.createElement('div');
-    card.className = 'order-item-card';
-
-    // Build items preview
-    const itemsPreview = order.items.map(i => `${i.name}: ${i.quantity} ${i.unit || ''}`).join(', ');
-
-    // Badge styling class
-    const badgeClass = `badge-${order.status}`;
-    let badgeText = '';
-    switch (order.status) {
-      case 'draft': badgeText = 'טיוטה'; break;
-      case 'pending_approval': badgeText = 'ממתין לאישור'; break;
-      case 'completed': badgeText = 'בוצע בהצלחה'; break;
-      case 'correction_sent': badgeText = 'נשלח תיקון'; break;
-    }
-
-    // Determine primary action button based on status
-    let actionBtnHTML = '';
-    if (order.status === 'pending_approval') {
-      actionBtnHTML = `
-        <button class="btn btn-primary btn-sm" onclick="prepareDispatch('${order.id}')">
-          <i class="fa-solid fa-paper-plane"></i> הכן לשיגור
-        </button>
-      `;
-    } else if (order.status === 'completed' || order.status === 'correction_sent') {
-      actionBtnHTML = `
-        <button class="btn btn-secondary btn-sm" onclick="prepareDispatch('${order.id}')">
-          <i class="fa-solid fa-rotate"></i> שלח עדכון/תיקון
-        </button>
-      `;
-    }
-
-    card.innerHTML = `
-      <div class="order-header-row">
-        <span class="vendor-title">${order.vendorName}</span>
-        <span class="badge ${badgeClass}">
-          <span class="status-dot"></span> ${badgeText}
-        </span>
-      </div>
-      <div class="order-body-row">
-        <span class="items-title">פריטים שהוזמנו:</span>
-        <div class="items-text-preview">${itemsPreview}</div>
-      </div>
-      <div class="order-actions-row">
-        <div class="order-meta">
-          תאריך: ${formatDateHebrew(order.date)}
-        </div>
-        <div class="button-group">
-          <button class="btn btn-secondary btn-sm" onclick="openEditOrderModal('${order.id}')">
-            <i class="fa-solid fa-pen"></i> ערוך כמויות
-          </button>
-          ${actionBtnHTML}
-          <button class="btn btn-danger btn-sm" style="background: transparent; color: var(--color-danger); border: 1px solid rgba(239,68,68,0.2)" onclick="deleteOrder('${order.id}')">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        </div>
-      </div>
-    `;
-
-    ordersListContainer.appendChild(card);
-  });
 }
+
 
 function renderActivityLogs() {
   activityLogContainer.innerHTML = '';
@@ -870,7 +902,30 @@ async function executeDispatch() {
 // Global scope helpers for onclick handlers in dynamically generated HTML
 window.openNewOrderModal = openNewOrderModal;
 window.openEditOrderModal = openEditOrderModal;
+window.openNewOrderForVendor = openNewOrderForVendor;
 window.deleteOrder = deleteOrder;
 window.prepareDispatch = prepareDispatch;
 window.openEditVendorModal = openEditVendorModal;
 window.deleteVendor = deleteVendor;
+
+function openNewOrderForVendor(vendorId) {
+  const vendor = vendors.find(v => v.id === vendorId);
+  if (!vendor) return;
+
+  orderModalTitle.textContent = `הזמנה חדשה - ${vendor.name}`;
+  orderIdInput.value = '';
+  orderForm.reset();
+  document.getElementById('order-vendor-id-input').value = vendor.id;
+  
+  // Render vendor selection buttons with this vendor active
+  renderOrderVendorButtons(vendor.id);
+  
+  // Load vendor catalog items
+  loadVendorCatalog(vendor.id);
+
+  // Clear custom items list
+  orderItemsListContainer.innerHTML = '';
+  
+  modalOrder.classList.add('active');
+}
+
