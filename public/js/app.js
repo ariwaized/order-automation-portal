@@ -38,9 +38,9 @@ const btnCloseSafetyModal = document.getElementById('btn-close-safety-modal');
 // Forms & Inputs
 const orderForm = document.getElementById('order-form');
 const orderIdInput = document.getElementById('order-id-input');
-const orderVendorSelect = document.getElementById('order-vendor-select');
 const orderItemsListContainer = document.getElementById('order-items-list-container');
 const btnAddItemRow = document.getElementById('btn-add-item-row');
+
 
 const vendorForm = document.getElementById('vendor-form');
 const vendorIdInput = document.getElementById('vendor-id-input');
@@ -119,12 +119,12 @@ async function loadVendors() {
   try {
     const res = await fetch('/api/vendors');
     vendors = await res.json();
-    populateVendorSelect();
     renderVendors();
   } catch (err) {
     console.error('Error loading vendors:', err);
   }
 }
+
 
 async function loadOrders() {
   try {
@@ -137,51 +137,8 @@ async function loadOrders() {
   }
 }
 
-// --- UI Rendering ---
+// UI Rendering is handled by renderOrders and renderVendors
 
-function populateVendorSelect() {
-  orderVendorSelect.innerHTML = '<option value="" disabled selected>בחר ספק מהרשימה...</option>';
-  
-  const bakeries = vendors.filter(v => v.category === 'bakery');
-  const vegetables = vendors.filter(v => v.category === 'vegetables');
-  const others = vendors.filter(v => v.category !== 'bakery' && v.category !== 'vegetables');
-
-  if (bakeries.length > 0) {
-    const group = document.createElement('optgroup');
-    group.label = 'מאפים';
-    bakeries.forEach(v => {
-      const option = document.createElement('option');
-      option.value = v.id;
-      option.textContent = v.name;
-      group.appendChild(option);
-    });
-    orderVendorSelect.appendChild(group);
-  }
-
-  if (vegetables.length > 0) {
-    const group = document.createElement('optgroup');
-    group.label = 'ירקות';
-    vegetables.forEach(v => {
-      const option = document.createElement('option');
-      option.value = v.id;
-      option.textContent = v.name;
-      group.appendChild(option);
-    });
-    orderVendorSelect.appendChild(group);
-  }
-
-  if (others.length > 0) {
-    const group = document.createElement('optgroup');
-    group.label = 'אחר';
-    others.forEach(v => {
-      const option = document.createElement('option');
-      option.value = v.id;
-      option.textContent = v.name;
-      group.appendChild(option);
-    });
-    orderVendorSelect.appendChild(group);
-  }
-}
 
 
 function renderOrders() {
@@ -449,8 +406,15 @@ function openNewOrderModal() {
   orderModalTitle.textContent = 'יצירת הזמנה חדשה';
   orderIdInput.value = '';
   orderForm.reset();
+  document.getElementById('order-vendor-id-input').value = '';
+  
+  // Render vendor selection buttons (none active)
+  renderOrderVendorButtons(null);
+  
+  // Reset catalog container and custom items list
+  document.getElementById('catalog-items-container').innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 10px;">בחר חברה למעלה כדי להציג את רשימת המוצרים שלה.</div>';
   orderItemsListContainer.innerHTML = '';
-  addItemRow(); // Start with one item row
+  
   modalOrder.classList.add('active');
 }
 
@@ -460,15 +424,29 @@ function openEditOrderModal(orderId) {
 
   orderModalTitle.textContent = `עריכת הזמנה - ${order.vendorName}`;
   orderIdInput.value = order.id;
-  orderVendorSelect.value = order.vendorId;
-  orderItemsListContainer.innerHTML = '';
+  document.getElementById('order-vendor-id-input').value = order.vendorId;
   
-  order.items.forEach(item => {
-    addItemRow(item.name, item.quantity, item.unit);
-  });
+  // Render vendor selection buttons
+  renderOrderVendorButtons(order.vendorId, order.items);
+  
+  // Load vendor catalog items populated with current quantities
+  loadVendorCatalog(order.vendorId, order.items);
+
+  // Load custom items that are NOT in the vendor catalog
+  orderItemsListContainer.innerHTML = '';
+  const vendor = vendors.find(v => v.id === order.vendorId);
+  const catalogNames = vendor && vendor.catalog ? vendor.catalog.map(c => c.name) : [];
+  
+  const customItems = order.items.filter(i => !catalogNames.includes(i.name));
+  if (customItems.length > 0) {
+    customItems.forEach(item => {
+      addItemRow(item.name, item.quantity, item.unit);
+    });
+  }
   
   modalOrder.classList.add('active');
 }
+
 
 function addItemRow(name = '', quantity = 1, unit = 'ק"ג') {
   const row = document.createElement('div');
@@ -496,21 +474,47 @@ async function handleOrderSubmit(e) {
   e.preventDefault();
   
   const orderId = orderIdInput.value;
-  const vendorId = orderVendorSelect.value;
+  const vendorId = document.getElementById('order-vendor-id-input').value;
   const vendor = vendors.find(v => v.id === vendorId);
 
-  // Gather items
-  const itemRows = orderItemsListContainer.querySelectorAll('.item-row');
+  if (!vendorId) {
+    alert('אנא בחר ספק (חברה) להזמנה');
+    return;
+  }
+
   const items = [];
+
+  // 1. Gather items from predefined catalog
+  const catalogRows = document.querySelectorAll('.catalog-item-row');
+  catalogRows.forEach(row => {
+    const input = row.querySelector('.catalog-item-quantity');
+    const quantity = parseFloat(input.value);
+    if (quantity > 0) {
+      items.push({
+        name: input.getAttribute('data-name'),
+        quantity: quantity,
+        unit: input.getAttribute('data-unit')
+      });
+    }
+  });
+
+  // 2. Gather items from custom items section
+  const itemRows = orderItemsListContainer.querySelectorAll('.item-row');
   itemRows.forEach(row => {
-    const name = row.querySelector('.item-name').value;
-    const quantity = parseFloat(row.querySelector('.item-quantity').value);
-    const unit = row.querySelector('.item-unit').value;
-    items.push({ name, quantity, unit });
+    const nameInput = row.querySelector('.item-name');
+    const name = nameInput ? nameInput.value.trim() : '';
+    const quantityInput = row.querySelector('.item-quantity');
+    const quantity = quantityInput ? parseFloat(quantityInput.value) : 0;
+    const unitSelect = row.querySelector('.item-unit');
+    const unit = unitSelect ? unitSelect.value : 'יחידות';
+    
+    if (name && quantity > 0) {
+      items.push({ name, quantity, unit });
+    }
   });
 
   if (items.length === 0) {
-    alert('יש להוסיף לפחות פריט אחד להזמנה');
+    alert('יש להזין כמות (גדולה מ-0) לפחות עבור מוצר אחד');
     return;
   }
 
@@ -525,7 +529,6 @@ async function handleOrderSubmit(e) {
     items,
     status: existingOrder ? existingOrder.status : 'pending_approval'
   };
-
 
   // Add action log details
   if (existingOrder) {
@@ -559,6 +562,73 @@ async function handleOrderSubmit(e) {
   }
 }
 
+// Predefined catalog rendering helpers
+function renderOrderVendorButtons(activeVendorId = null, orderItems = []) {
+  const container = document.getElementById('order-vendor-buttons');
+  container.innerHTML = '';
+
+  vendors.forEach(v => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `vendor-select-btn ${activeVendorId === v.id ? 'active' : ''}`;
+    
+    // Choose icon class based on category
+    let iconClass = 'fa-solid fa-truck';
+    if (v.category === 'bakery') iconClass = 'fa-solid fa-bread-slice';
+    else if (v.category === 'vegetables') iconClass = 'fa-solid fa-carrot';
+    
+    btn.innerHTML = `
+      <i class="${iconClass}"></i>
+      <span>${v.name}</span>
+    `;
+
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.vendor-select-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('order-vendor-id-input').value = v.id;
+      loadVendorCatalog(v.id, orderItems);
+    });
+
+    container.appendChild(btn);
+  });
+}
+
+function loadVendorCatalog(vendorId, orderItems = []) {
+  const container = document.getElementById('catalog-items-container');
+  container.innerHTML = '';
+
+  const vendor = vendors.find(v => v.id === vendorId);
+  if (!vendor) return;
+
+  const catalog = vendor.catalog || [];
+
+  if (catalog.length === 0) {
+    container.innerHTML = `
+      <div style="color: var(--text-secondary); font-size: 0.9rem; text-align: center; padding: 10px; width: 100%;">
+        לא הוגדרה רשימת מוצרים קבועה עבור ספק זה.<br>
+        השתמש באזור "מוצרים נוספים" מטה כדי להוסיף פריטים באופן חופשי.
+      </div>
+    `;
+    return;
+  }
+
+  catalog.forEach(item => {
+    // Check if this item is present in the current order items (for editing)
+    const activeItem = orderItems.find(i => i.name === item.name);
+    const quantity = activeItem ? activeItem.quantity : '';
+
+    const row = document.createElement('div');
+    row.className = 'catalog-item-row';
+    row.innerHTML = `
+      <span class="catalog-item-name">${item.name}</span>
+      <input type="number" class="form-control catalog-item-quantity" data-name="${item.name}" data-unit="${item.unit}" placeholder="כמות" min="0" step="any" value="${quantity}">
+      <span class="catalog-item-unit-label">${item.unit}</span>
+    `;
+    container.appendChild(row);
+  });
+}
+
+
 async function deleteOrder(orderId) {
   if (!confirm('האם אתה בטוח שברצונך למחוק הזמנה זו? כל הנתונים שלה יימחקו לצמיתות.')) return;
   try {
@@ -578,9 +648,11 @@ function openNewVendorModal() {
   vendorIdInput.value = '';
   vendorForm.reset();
   document.getElementById('vendor-category-select').value = 'bakery';
+  document.getElementById('vendor-catalog-input').value = '';
   toggleVendorTypeFields('email');
   modalVendor.classList.add('active');
 }
+
 
 
 function openEditVendorModal(vendorId) {
@@ -595,8 +667,13 @@ function openEditVendorModal(vendorId) {
   toggleVendorTypeFields(vendor.type);
   document.getElementById('vendor-category-select').value = vendor.category || 'bakery';
 
-  if (vendor.type === 'email') {
+  // Load catalog text list (newline separated)
+  const catalogText = vendor.catalog 
+    ? vendor.catalog.map(c => `${c.name}, ${c.unit || 'יחידות'}`).join('\n')
+    : '';
+  document.getElementById('vendor-catalog-input').value = catalogText;
 
+  if (vendor.type === 'email') {
     vendorEmailInput.value = vendor.email || '';
     vendorEmailTemplate.value = vendor.emailTemplate || '';
     vendorCorrectionTemplate.value = vendor.correctionTemplate || '';
@@ -608,6 +685,7 @@ function openEditVendorModal(vendorId) {
 
   modalVendor.classList.add('active');
 }
+
 
 function toggleVendorTypeFields(type) {
   if (type === 'email') {
@@ -630,13 +708,29 @@ async function handleVendorSubmit(e) {
   const type = vendorTypeSelect.value;
 
   const category = document.getElementById('vendor-category-select').value;
+  const catalogText = document.getElementById('vendor-catalog-input').value.trim();
+
+  // Parse lines to catalog array of {name, unit}
+  const catalog = [];
+  if (catalogText) {
+    catalogText.split('\n').forEach(line => {
+      const parts = line.split(',');
+      const name = parts[0]?.trim();
+      const unit = parts[1]?.trim() || 'יחידות';
+      if (name) {
+        catalog.push({ name, unit });
+      }
+    });
+  }
 
   const vendorPayload = {
     id: vendorId || undefined,
     name: vendorNameInput.value,
     type,
     category,
+    catalog,
     email: type === 'email' ? vendorEmailInput.value : '',
+
     emailTemplate: type === 'email' ? vendorEmailTemplate.value : '',
     correctionTemplate: type === 'email' ? vendorCorrectionTemplate.value : '',
     websiteUrl: type === 'website' ? vendorWebsiteUrl.value : '',

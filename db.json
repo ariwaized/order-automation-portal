@@ -10,7 +10,13 @@
       "username": "berman_user",
       "password": "PasswordBerman1",
       "emailTemplate": "",
-      "correctionTemplate": ""
+      "correctionTemplate": "",
+      "catalog": [
+        { "name": "לחם אחיד פרוס", "unit": "יחידות" },
+        { "name": "חלות שבת", "unit": "יחידות" },
+        { "name": "לחמניות המבורגר", "unit": "יחידות" },
+        { "name": "לחם לבן פרוס", "unit": "יחידות" }
+      ]
     },
     {
       "id": "v_einbar",
@@ -22,7 +28,13 @@
       "username": "einbar_user",
       "password": "PasswordEinbar2",
       "emailTemplate": "",
-      "correctionTemplate": ""
+      "correctionTemplate": "",
+      "catalog": [
+        { "name": "לחם כפרי כהה", "unit": "יחידות" },
+        { "name": "לחם דגנים קל", "unit": "יחידות" },
+        { "name": "לחמניות אצבע", "unit": "יחידות" },
+        { "name": "פיתות כוסמין", "unit": "ארגזים" }
+      ]
     },
     {
       "id": "v_bikurim",
@@ -34,7 +46,12 @@
       "username": "",
       "password": "",
       "emailTemplate": "שלום לצוות ביכורים,\nאנא ספקו עבורנו את הלחמים הבאים לתאריך {{date}}:\n\n{{items}}\n\nבברכה,\nמחלקת הזמנות",
-      "correctionTemplate": "שלום לצוות ביכורים,\nבוצע תיכון כמויות להזמנה של תאריך {{date}}:\n\nהשינויים:\n{{changes}}\n\nהרשימה המעודכנת:\n{{items}}"
+      "correctionTemplate": "שלום לצוות ביכורים,\nבוצע תיכון כמויות להזמנה של תאריך {{date}}:\n\nהשינויים:\n{{changes}}\n\nהרשימה המעודכנת:\n{{items}}",
+      "catalog": [
+        { "name": "לחם כוסמין 100%", "unit": "יחידות" },
+        { "name": "לחם מחמצת שיפון", "unit": "יחידות" },
+        { "name": "קרקרים כוסמין", "unit": "ארגזים" }
+      ]
     },
     {
       "id": "v_ran",
@@ -46,7 +63,13 @@
       "username": "ran_veggies_user",
       "password": "RanPassword123",
       "emailTemplate": "",
-      "correctionTemplate": ""
+      "correctionTemplate": "",
+      "catalog": [
+        { "name": "עגבניות", "unit": "ק\"ג" },
+        { "name": "מלפפונים", "unit": "ק\"ג" },
+        { "name": "פלפל אדום", "unit": "ק\"ג" },
+        { "name": "חסה לאטוזה", "unit": "ארגזים" }
+      ]
     },
     {
       "id": "v_yanki",
@@ -58,7 +81,13 @@
       "username": "",
       "password": "",
       "emailTemplate": "שלום יענקי,\nלהלן ההזמנה לתאריך {{date}}:\n\n{{items}}\n\nתודה,\nהזמנות",
-      "correctionTemplate": "שלום יענקי,\nנא לעדכן את הכמויות הבאות להזמנה של {{date}}:\n\nהפרשים:\n{{changes}}\n\nסך הכל פריטים להזמנה:\n{{items}}"
+      "correctionTemplate": "שלום יענקי,\nנא לעדכן את הכמויות הבאות להזמנה של {{date}}:\n\nהפרשים:\n{{changes}}\n\nסך הכל פריטים להזמנה:\n{{items}}",
+      "catalog": [
+        { "name": "בצל יבש", "unit": "שק" },
+        { "name": "תפוחי אדמה", "unit": "שק" },
+        { "name": "גזר ארוז", "unit": "ק\"ג" },
+        { "name": "לימונים", "unit": "ק\"ג" }
+      ]
     }
   ],
   "orders": [
@@ -70,12 +99,12 @@
       "category": "vegetables",
       "status": "completed",
       "items": [
-        { "name": "עגבניות מובחרות", "quantity": 20, "unit": "ק\"ג" },
-        { "name": "מלפפון סלטים", "quantity": 15, "unit": "ק\"ג" }
+        { "name": "בצל יבש", "quantity": 5, "unit": "שק" },
+        { "name": "תפוחי אדמה", "quantity": 10, "unit": "שק" }
       ],
       "dispatchedItems": [
-        { "name": "עגבניות מובחרות", "quantity": 20, "unit": "ק\"ג" },
-        { "name": "מלפפון סלטים", "quantity": 15, "unit": "ק\"ג" }
+        { "name": "בצל יבש", "quantity": 5, "unit": "שק" },
+        { "name": "תפוחי אדמה", "quantity": 10, "unit": "שק" }
       ],
       "actionsLog": [
         { "timestamp": "2026-06-24T08:00:00.000Z", "action": "הזמנה נוצרה כטיוטה" },
