@@ -56,11 +56,6 @@
           <label for="order-date-picker"><i class="fa-regular fa-calendar-days"></i> תאריך הזמנות:</label>
           <input type="date" id="order-date-picker" class="date-picker">
         </div>
-        <div class="actions-header">
-          <button class="btn btn-primary" id="btn-new-order">
-            <i class="fa-solid fa-plus"></i> יצירת הזמנה חדשה
-          </button>
-        </div>
       </header>
 
       <!-- Dashboard View -->
@@ -155,13 +150,6 @@
       </div>
       <form id="order-form">
         <input type="hidden" id="order-id-input">
-        
-        <div class="form-group" id="vendor-selector-group">
-          <label>בחר ספק (לחץ לבחירת חברה):</label>
-          <div class="vendor-buttons-grid" id="order-vendor-buttons">
-            <!-- Loaded dynamically as buttons -->
-          </div>
-        </div>
         <input type="hidden" id="order-vendor-id-input" required>
         
         <div class="form-group">

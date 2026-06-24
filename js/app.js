@@ -496,7 +496,6 @@ const modalSafetyConfirm = document.getElementById('modal-safety-confirm');
 const orderModalTitle = document.getElementById('order-modal-title');
 const vendorModalTitle = document.getElementById('vendor-modal-title');
 
-const btnNewOrder = document.getElementById('btn-new-order');
 const btnAddVendorModal = document.getElementById('btn-add-vendor-modal');
 
 // Close buttons
@@ -849,7 +848,6 @@ function setupEventListeners() {
   });
 
   // Open/Close Modals
-  btnNewOrder.addEventListener('click', () => openNewOrderModal());
   btnAddVendorModal.addEventListener('click', () => openNewVendorModal());
 
   btnCloseOrderModal.addEventListener('click', () => modalOrder.classList.remove('active'));
@@ -916,20 +914,6 @@ function setupEventListeners() {
 }
 
 // Order Modal Logic
-function openNewOrderModal() {
-  orderModalTitle.textContent = 'יצירת הזמנה חדשה';
-  orderIdInput.value = '';
-  orderForm.reset();
-  document.getElementById('order-vendor-id-input').value = '';
-  
-  document.getElementById('vendor-selector-group').style.display = 'block';
-  renderOrderVendorButtons(null);
-  document.getElementById('catalog-items-container').innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 10px;">בחר חברה למעלה כדי להציג את רשימת המוצרים שלה.</div>';
-  orderItemsListContainer.innerHTML = '';
-  
-  modalOrder.classList.add('active');
-}
-
 function openEditOrderModal(orderId) {
   const order = orders.find(o => o.id === orderId);
   if (!order) return;
@@ -938,8 +922,6 @@ function openEditOrderModal(orderId) {
   orderIdInput.value = order.id;
   document.getElementById('order-vendor-id-input').value = order.vendorId;
   
-  document.getElementById('vendor-selector-group').style.display = 'none';
-  renderOrderVendorButtons(order.vendorId, order.items);
   loadVendorCatalog(order.vendorId, order.items);
 
   orderItemsListContainer.innerHTML = '';
@@ -965,8 +947,6 @@ function openNewOrderForVendor(vendorId) {
   orderForm.reset();
   document.getElementById('order-vendor-id-input').value = vendor.id;
   
-  document.getElementById('vendor-selector-group').style.display = 'none';
-  renderOrderVendorButtons(vendor.id);
   loadVendorCatalog(vendor.id);
   orderItemsListContainer.innerHTML = '';
   
@@ -1088,35 +1068,7 @@ async function handleOrderSubmit(e) {
   }
 }
 
-function renderOrderVendorButtons(activeVendorId = null, orderItems = []) {
-  const container = document.getElementById('order-vendor-buttons');
-  container.innerHTML = '';
-
-  vendors.forEach(v => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = `vendor-select-btn ${activeVendorId === v.id ? 'active' : ''}`;
-    
-    let iconClass = 'fa-solid fa-truck';
-    if (v.category === 'bakery') iconClass = 'fa-solid fa-bread-slice';
-    else if (v.category === 'vegetables') iconClass = 'fa-solid fa-carrot';
-    else if (v.category === 'raw_materials') iconClass = 'fa-solid fa-boxes-stacked';
-    
-    btn.innerHTML = `
-      <i class="${iconClass}"></i>
-      <span>${v.name}</span>
-    `;
-
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.vendor-select-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('order-vendor-id-input').value = v.id;
-      loadVendorCatalog(v.id, orderItems);
-    });
-
-    container.appendChild(btn);
-  });
-}
+// Vendor selector grid is no longer used, as each order modal is locked to a single vendor.
 
 function loadVendorCatalog(vendorId, orderItems = []) {
   const container = document.getElementById('catalog-items-container');
@@ -1355,7 +1307,6 @@ async function executeDispatch() {
 }
 
 // Global scope bindings for dynamically generated HTML elements
-window.openNewOrderModal = openNewOrderModal;
 window.openEditOrderModal = openEditOrderModal;
 window.openNewOrderForVendor = openNewOrderForVendor;
 window.deleteOrder = deleteOrder;
