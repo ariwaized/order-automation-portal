@@ -150,7 +150,8 @@ function renderOrders() {
   // Group vendors by category
   const categories = {
     bakery: { name: 'מאפים', icon: 'fa-bread-slice', vendors: [] },
-    vegetables: { name: 'ירקות', icon: 'fa-carrot', vendors: [] }
+    vegetables: { name: 'ירקות', icon: 'fa-carrot', vendors: [] },
+    raw_materials: { name: 'חומרי גלם', icon: 'fa-boxes-stacked', vendors: [] }
   };
 
   // Filter vendors based on category filter
@@ -183,14 +184,20 @@ function renderOrders() {
       
       const card = document.createElement('div');
       card.className = `vendor-order-card ${order ? 'has-order' : 'no-order'}`;
+      card.style.cursor = 'pointer';
       
+      // Make the entire card clickable to enter edit/create mode
+      card.addEventListener('click', () => {
+        if (order) {
+          openEditOrderModal(order.id);
+        } else {
+          openNewOrderForVendor(vendor.id);
+        }
+      });
+
       let statusBadge = '<span class="badge badge-no-order">לא הוזמן</span>';
-      let itemsPreview = 'אין מוצרים בהזמנה לתאריך זה';
-      let actionButtons = `
-        <button class="btn btn-primary btn-sm" onclick="openNewOrderForVendor('${vendor.id}')">
-          <i class="fa-solid fa-plus"></i> צור הזמנה
-        </button>
-      `;
+      let itemsPreview = 'אין הזמנה לתאריך זה. לחץ כאן ליצירה...';
+      let actionButtons = '';
 
       if (order) {
         const badgeClass = `badge-${order.status}`;
@@ -208,24 +215,21 @@ function renderOrders() {
         let dispatchBtnHTML = '';
         if (order.status === 'pending_approval') {
           dispatchBtnHTML = `
-            <button class="btn btn-primary btn-sm" onclick="prepareDispatch('${order.id}')">
+            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); prepareDispatch('${order.id}')">
               <i class="fa-solid fa-paper-plane"></i> שגר
             </button>
           `;
         } else if (order.status === 'completed' || order.status === 'correction_sent') {
           dispatchBtnHTML = `
-            <button class="btn btn-secondary btn-sm" onclick="prepareDispatch('${order.id}')">
+            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); prepareDispatch('${order.id}')">
               <i class="fa-solid fa-rotate"></i> עדכן/תקן
             </button>
           `;
         }
 
         actionButtons = `
-          <button class="btn btn-secondary btn-sm" onclick="openEditOrderModal('${order.id}')">
-            <i class="fa-solid fa-pen"></i> ערוך
-          </button>
           ${dispatchBtnHTML}
-          <button class="btn btn-secondary btn-sm text-danger" style="color: var(--color-danger); border-color: rgba(239,68,68,0.15);" onclick="deleteOrder('${order.id}')">
+          <button class="btn btn-secondary btn-sm text-danger" style="color: var(--color-danger); border-color: rgba(239,68,68,0.15);" onclick="event.stopPropagation(); deleteOrder('${order.id}')">
             <i class="fa-solid fa-trash"></i>
           </button>
         `;
@@ -239,9 +243,7 @@ function renderOrders() {
         <div class="vendor-card-middle">
           <p class="vendor-card-items-preview">${itemsPreview}</p>
         </div>
-        <div class="vendor-card-bottom">
-          ${actionButtons}
-        </div>
+        ${order ? `<div class="vendor-card-bottom">${actionButtons}</div>` : ''}
       `;
 
       grid.appendChild(card);
@@ -260,6 +262,7 @@ function renderOrders() {
     `;
   }
 }
+
 
 
 function renderActivityLogs() {
@@ -611,6 +614,7 @@ function renderOrderVendorButtons(activeVendorId = null, orderItems = []) {
     let iconClass = 'fa-solid fa-truck';
     if (v.category === 'bakery') iconClass = 'fa-solid fa-bread-slice';
     else if (v.category === 'vegetables') iconClass = 'fa-solid fa-carrot';
+    else if (v.category === 'raw_materials') iconClass = 'fa-solid fa-boxes-stacked';
     
     btn.innerHTML = `
       <i class="${iconClass}"></i>
@@ -627,6 +631,7 @@ function renderOrderVendorButtons(activeVendorId = null, orderItems = []) {
     container.appendChild(btn);
   });
 }
+
 
 function loadVendorCatalog(vendorId, orderItems = []) {
   const container = document.getElementById('catalog-items-container');

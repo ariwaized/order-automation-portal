@@ -88,6 +88,24 @@
         { "name": "גזר ארוז", "unit": "ק\"ג" },
         { "name": "לימונים", "unit": "ק\"ג" }
       ]
+    },
+    {
+      "id": "v_yosef",
+      "name": "יוסף חומרי גלם",
+      "category": "raw_materials",
+      "type": "email",
+      "email": "yosef@rawmaterials.co.il",
+      "websiteUrl": "",
+      "username": "",
+      "password": "",
+      "emailTemplate": "שלום יוסף,\nאנא ספק לנו את חומרי הגלם הבאים לתאריך {{date}}:\n\n{{items}}\n\nתודה,\nמנהל מחסן",
+      "correctionTemplate": "שלום יוסף,\nבוצע תיקון כמויות להזמנת הגלם לתאריך {{date}}:\n\nשינויים:\n{{changes}}\n\nרשימה מלאה מעודכנת:\n{{items}}",
+      "catalog": [
+        { "name": "קמח לבן", "unit": "שק 25 ק\"ג" },
+        { "name": "סוכר לבן", "unit": "שק 50 ק\"ג" },
+        { "name": "שמן קנולה", "unit": "פח 10 ליטר" },
+        { "name": "שמרים יבשים", "unit": "חבילה 500 גרם" }
+      ]
     }
   ],
   "orders": [
