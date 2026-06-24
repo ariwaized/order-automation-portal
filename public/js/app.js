@@ -26,6 +26,9 @@ const viewVendors = document.getElementById('view-vendors');
 const modalOrder = document.getElementById('modal-order');
 const modalVendor = document.getElementById('modal-vendor');
 const modalSafetyConfirm = document.getElementById('modal-safety-confirm');
+const orderModalTitle = document.getElementById('order-modal-title');
+const vendorModalTitle = document.getElementById('vendor-modal-title');
+
 
 const btnNewOrder = document.getElementById('btn-new-order');
 const btnAddVendorModal = document.getElementById('btn-add-vendor-modal');
