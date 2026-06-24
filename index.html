@@ -10,6 +10,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Firebase SDKs (Compat version for simplicity) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -34,8 +39,11 @@
       <div class="sidebar-footer">
         <div class="db-status-badge" id="db-status">
           <span class="status-dot"></span>
-          <span id="db-status-text">מתחבר למסד נתונים...</span>
+          <span id="db-status-text">טוען חיבור...</span>
         </div>
+        <button class="btn btn-secondary btn-sm" id="btn-cloud-settings" style="width: 100%; margin-top: 10px; display: flex; gap: 8px; justify-content: center;">
+          <i class="fa-solid fa-cloud"></i> הגדרות חיבור ענן
+        </button>
       </div>
     </aside>
 
@@ -74,18 +82,14 @@
           </div>
         </div>
 
-
         <div class="dashboard-grid">
 
-          
-          <!-- Orders Column -->
           <!-- Orders Grid Column -->
           <div class="orders-dashboard-wrapper">
             <div class="orders-list" id="orders-list-container">
               <!-- Orders will be loaded here dynamically as vendor-specific cards -->
             </div>
           </div>
-
 
           <!-- Quick Stats / Actions Log Column -->
           <div class="card logs-card">
@@ -118,7 +122,6 @@
             <button class="btn filter-btn" data-category="raw_materials"><i class="fa-solid fa-boxes-stacked"></i> חומרי גלם</button>
           </div>
         </div>
-
 
         <div class="vendors-layout">
 
@@ -186,7 +189,6 @@
     </div>
   </div>
 
-
   <!-- Modal: Create/Edit Vendor -->
   <div class="modal" id="modal-vendor">
     <div class="modal-content modal-lg">
@@ -216,9 +218,7 @@
               <option value="raw_materials">חומרי גלם</option>
             </select>
           </div>
-
         </div>
-
 
         <!-- Email Options Section -->
         <div id="vendor-email-options" class="vendor-sub-section">
@@ -264,7 +264,6 @@
           <button type="button" class="btn btn-secondary" id="btn-cancel-vendor">ביטול</button>
           <button type="submit" class="btn btn-primary">שמור ספק</button>
         </div>
-
       </form>
     </div>
   </div>
@@ -322,6 +321,29 @@
           <i class="fa-solid fa-paper-plane"></i> אשר ושגר הזמנה
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal: Cloud Connection Settings -->
+  <div class="modal" id="modal-cloud-settings">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>הגדרות חיבור לענן (Firebase)</h3>
+        <button class="close-modal-btn" id="btn-close-cloud-modal">&times;</button>
+      </div>
+      <form id="cloud-settings-form">
+        <div class="form-group" style="margin-top: 20px;">
+          <label for="cloud-config-input">קונפיגורציית Firebase Web App (הדבק פורמט JSON):</label>
+          <textarea id="cloud-config-input" class="form-control text-area-large" placeholder='{&#10;  "apiKey": "...",&#10;  "authDomain": "...",&#10;  "projectId": "...",&#10;  "appId": "..."&#10;}'></textarea>
+          <small style="color: var(--text-muted); display: block; margin-top: 8px; line-height: 1.4;">
+            העתק את קוד ה-Config של האפליקציה שלך מקונסול Firebase (הגדרות פרויקט -> אפליקציות אינטרנט).
+          </small>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btn-clear-cloud" style="color: var(--color-danger);">נתק ענן (חזור למצב מקומי)</button>
+          <button type="submit" class="btn btn-primary">שמור והתחבר</button>
+        </div>
+      </form>
     </div>
   </div>
 

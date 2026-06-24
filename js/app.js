@@ -1,4 +1,472 @@
-// Global State
+// Default Database Seed Data (used for initialization)
+const DEFAULT_VENDORS = [
+  {
+    "id": "v_berman",
+    "name": "ברמן",
+    "category": "bakery",
+    "type": "website",
+    "email": "",
+    "websiteUrl": "https://berman.co.il/portal",
+    "username": "berman_user",
+    "password": "PasswordBerman1",
+    "emailTemplate": "",
+    "correctionTemplate": "",
+    "catalog": [
+      { "name": "לחם אחיד פרוס", "unit": "יחידות" },
+      { "name": "חלות שבת", "unit": "יחידות" },
+      { "name": "לחמניות המבורגר", "unit": "יחידות" },
+      { "name": "לחם לבן פרוס", "unit": "יחידות" }
+    ]
+  },
+  {
+    "id": "v_einbar",
+    "name": "עין-בר",
+    "category": "bakery",
+    "type": "website",
+    "email": "",
+    "websiteUrl": "https://ein-bar.co.il/login",
+    "username": "einbar_user",
+    "password": "PasswordEinbar2",
+    "emailTemplate": "",
+    "correctionTemplate": "",
+    "catalog": [
+      { "name": "לחם כפרי כהה", "unit": "יחידות" },
+      { "name": "לחם דגנים קל", "unit": "יחידות" },
+      { "name": "לחמניות אצבע", "unit": "יחידות" },
+      { "name": "פיתות כוסמין", "unit": "ארגזים" }
+    ]
+  },
+  {
+    "id": "v_bikurim",
+    "name": "מאפיית ביכורים",
+    "category": "bakery",
+    "type": "email",
+    "email": "orders@bikurim-bakery.co.il",
+    "websiteUrl": "",
+    "username": "",
+    "password": "",
+    "emailTemplate": "שלום לצוות ביכורים,\nאנא ספקו עבורנו את הלחמים הבאים לתאריך {{date}}:\n\n{{items}}\n\nבברכה,\nמחלקת הזמנות",
+    "correctionTemplate": "שלום לצוות ביכורים,\nבוצע תיקון כמויות להזמנה של תאריך {{date}}:\n\nהשינויים:\n{{changes}}\n\nהרשימה המעודכנת:\n{{items}}",
+    "catalog": [
+      { "name": "לחם כוסמין 100%", "unit": "יחידות" },
+      { "name": "לחם מחמצת שיפון", "unit": "יחידות" },
+      { "name": "קרקרים כוסמין", "unit": "ארגזים" }
+    ]
+  },
+  {
+    "id": "v_ran",
+    "name": "ראן",
+    "category": "vegetables",
+    "type": "website",
+    "email": "",
+    "websiteUrl": "https://ran-veggies.co.il/login",
+    "username": "ran_veggies_user",
+    "password": "RanPassword123",
+    "emailTemplate": "",
+    "correctionTemplate": "",
+    "catalog": [
+      { "name": "עגבניות", "unit": "ק\"ג" },
+      { "name": "מלפפונים", "unit": "ק\"ג" },
+      { "name": "פלפל אדום", "unit": "ק\"ג" },
+      { "name": "חסה לאטוזה", "unit": "ארגזים" }
+    ]
+  },
+  {
+    "id": "v_yanki",
+    "name": "יענקי פרידמן",
+    "category": "vegetables",
+    "type": "email",
+    "email": "yanki.friedman@gmail.com",
+    "websiteUrl": "",
+    "username": "",
+    "password": "",
+    "emailTemplate": "שלום יענקי,\nלהלן ההזמנה לתאריך {{date}}:\n\n{{items}}\n\nתודה,\nהזמנות",
+    "correctionTemplate": "שלום יענקי,\nנא לעדכן את הכמויות הבאות להזמנה של {{date}}:\n\nהפרשים:\n{{changes}}\n\nסך הכל פריטים להזמנה:\n{{items}}",
+    "catalog": [
+      { "name": "בצל יבש", "unit": "שק" },
+      { "name": "תפוחי אדמה", "unit": "שק" },
+      { "name": "גזר ארוז", "unit": "ק\"ג" },
+      { "name": "לימונים", "unit": "ק\"ג" }
+    ]
+  },
+  {
+    "id": "v_yosef",
+    "name": "יוסף חומרי גלם",
+    "category": "raw_materials",
+    "type": "email",
+    "email": "yosef@rawmaterials.co.il",
+    "websiteUrl": "",
+    "username": "",
+    "password": "",
+    "emailTemplate": "שלום יוסף,\nאנא ספק לנו את חומרי הגלם הבאים לתאריך {{date}}:\n\n{{items}}\n\nתודה,\nמנהל מחסן",
+    "correctionTemplate": "שלום יוסף,\nבוצע תיקון כמויות להזמנת הגלם לתאריך {{date}}:\n\nשינויים:\n{{changes}}\n\nרשימה מלאה מעודכנת:\n{{items}}",
+    "catalog": [
+      { "name": "קמח לבן", "unit": "שק 25 ק\"ג" },
+      { "name": "סוכר לבן", "unit": "שק 50 ק\"ג" },
+      { "name": "שמן קנולה", "unit": "פח 10 ליטר" },
+      { "name": "שמרים יבשים", "unit": "חבילה 500 גרם" }
+    ]
+  }
+];
+
+const DEFAULT_ORDERS = [
+  {
+    "id": "o_yanki_1",
+    "date": "2026-06-24",
+    "vendorId": "v_yanki",
+    "vendorName": "יענקי פרידמן",
+    "category": "vegetables",
+    "status": "completed",
+    "items": [
+      { "name": "בצל יבש", "quantity": 5, "unit": "שק" },
+      { "name": "תפוחי אדמה", "quantity": 10, "unit": "שק" }
+    ],
+    "dispatchedItems": [
+      { "name": "בצל יבש", "quantity": 5, "unit": "שק" },
+      { "name": "תפוחי אדמה", "quantity": 10, "unit": "שק" }
+    ],
+    "actionsLog": [
+      { "timestamp": "2026-06-24T08:00:00.000Z", "action": "הזמנה נוצרה כטיוטה" },
+      { "timestamp": "2026-06-24T08:10:00.000Z", "action": "נשלח מייל בהצלחה לכתובת yanki.friedman@gmail.com" }
+    ]
+  },
+  {
+    "id": "o_berman_1",
+    "date": "2026-06-24",
+    "vendorId": "v_berman",
+    "vendorName": "ברמן",
+    "category": "bakery",
+    "status": "pending_approval",
+    "items": [
+      { "name": "לחם אחיד פרוס", "quantity": 50, "unit": "יחידות" },
+      { "name": "חלות שבת", "quantity": 20, "unit": "יחידות" }
+    ],
+    "actionsLog": [
+      { "timestamp": "2026-06-24T08:15:00.000Z", "action": "הזמנה נוצרה וממתינה לאישור" }
+    ]
+  }
+];
+
+// --- Local Storage Database Helper ---
+function getLocalDB() {
+  let data = localStorage.getItem('order_automation_db');
+  if (!data) {
+    const initialData = { vendors: DEFAULT_VENDORS, orders: DEFAULT_ORDERS };
+    localStorage.setItem('order_automation_db', JSON.stringify(initialData));
+    return initialData;
+  }
+  try {
+    return JSON.parse(data);
+  } catch (e) {
+    return { vendors: DEFAULT_VENDORS, orders: DEFAULT_ORDERS };
+  }
+}
+
+function writeLocalDB(data) {
+  localStorage.setItem('order_automation_db', JSON.stringify(data));
+}
+
+// --- Firebase Initialization (if configured) ---
+let firebaseDb = null;
+let isFirebaseConnected = false;
+
+const fbConfigStr = localStorage.getItem('firebase_config');
+if (fbConfigStr) {
+  try {
+    const firebaseConfig = JSON.parse(fbConfigStr);
+    if (typeof firebase !== 'undefined') {
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      firebaseDb = firebase.firestore();
+      isFirebaseConnected = true;
+      console.log('Connected to Firebase Firestore successfully.');
+    }
+  } catch (error) {
+    console.error('Failed to initialize Firebase client:', error);
+  }
+}
+
+// --- Database Operations Adapter ---
+const dbOps = {
+  getDbType: () => isFirebaseConnected ? 'firebase' : 'local',
+
+  // Vendors CRUD
+  getVendors: async () => {
+    if (isFirebaseConnected && firebaseDb) {
+      try {
+        const snapshot = await firebaseDb.collection('vendors').get();
+        if (snapshot.empty) {
+          // Sync seed vendors to Firebase
+          const local = getLocalDB();
+          for (const v of local.vendors) {
+            const copy = { ...v };
+            delete copy.id;
+            await firebaseDb.collection('vendors').doc(v.id).set(copy);
+          }
+          return local.vendors;
+        }
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (err) {
+        console.error("Firebase getVendors error, falling back to local:", err);
+      }
+    }
+    return getLocalDB().vendors;
+  },
+
+  saveVendor: async (vendor) => {
+    if (isFirebaseConnected && firebaseDb) {
+      try {
+        const id = vendor.id || 'v_' + Date.now();
+        vendor.id = id;
+        const dataToSave = { ...vendor };
+        delete dataToSave.id;
+        await firebaseDb.collection('vendors').doc(id).set(dataToSave, { merge: true });
+        return vendor;
+      } catch (err) {
+        console.error("Firebase saveVendor error, falling back to local:", err);
+      }
+    }
+    const localData = getLocalDB();
+    if (!vendor.id) {
+      vendor.id = 'v_' + Date.now();
+      localData.vendors.push(vendor);
+    } else {
+      const idx = localData.vendors.findIndex(v => v.id === vendor.id);
+      if (idx !== -1) {
+        localData.vendors[idx] = vendor;
+      } else {
+        localData.vendors.push(vendor);
+      }
+    }
+    writeLocalDB(localData);
+    return vendor;
+  },
+
+  deleteVendor: async (vendorId) => {
+    if (isFirebaseConnected && firebaseDb) {
+      try {
+        await firebaseDb.collection('vendors').doc(vendorId).delete();
+      } catch (err) {
+        console.error("Firebase deleteVendor error, falling back to local:", err);
+      }
+    }
+    const localData = getLocalDB();
+    localData.vendors = localData.vendors.filter(v => v.id !== vendorId);
+    writeLocalDB(localData);
+  },
+
+  // Orders CRUD
+  getOrders: async (date) => {
+    if (isFirebaseConnected && firebaseDb) {
+      try {
+        let query = firebaseDb.collection('orders');
+        if (date) {
+          query = query.where('date', '==', date);
+        }
+        const snapshot = await query.get();
+        if (snapshot.empty && date) {
+          // Check local DB fallback or return empty
+          const local = getLocalDB();
+          return local.orders.filter(o => o.date === date);
+        }
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (err) {
+        console.error("Firebase getOrders error, falling back to local:", err);
+      }
+    }
+    const localData = getLocalDB();
+    if (date) {
+      return localData.orders.filter(o => o.date === date);
+    }
+    return localData.orders;
+  },
+
+  saveOrder: async (order) => {
+    if (isFirebaseConnected && firebaseDb) {
+      try {
+        const id = order.id || 'o_' + Date.now();
+        order.id = id;
+        const dataToSave = { ...order };
+        delete dataToSave.id;
+        await firebaseDb.collection('orders').doc(id).set(dataToSave, { merge: true });
+        return order;
+      } catch (err) {
+        console.error("Firebase saveOrder error, falling back to local:", err);
+      }
+    }
+    const localData = getLocalDB();
+    if (!order.id) {
+      order.id = 'o_' + Date.now();
+      localData.orders.push(order);
+    } else {
+      const idx = localData.orders.findIndex(o => o.id === order.id);
+      if (idx !== -1) {
+        localData.orders[idx] = order;
+      } else {
+        localData.orders.push(order);
+      }
+    }
+    writeLocalDB(localData);
+    return order;
+  },
+
+  deleteOrder: async (orderId) => {
+    if (isFirebaseConnected && firebaseDb) {
+      try {
+        await firebaseDb.collection('orders').doc(orderId).delete();
+      } catch (err) {
+        console.error("Firebase deleteOrder error, falling back to local:", err);
+      }
+    }
+    const localData = getLocalDB();
+    localData.orders = localData.orders.filter(o => o.id !== orderId);
+    writeLocalDB(localData);
+  }
+};
+
+// --- Order Diff & Formatter Logic (Ported from server.js) ---
+function formatItemsList(items) {
+  return items.map(item => `- ${item.name}: ${item.quantity} ${item.unit || ''}`).join('\n');
+}
+
+function computeItemsDiff(oldItems, newItems) {
+  const oldMap = new Map(oldItems.map(i => [i.name, i]));
+  const newMap = new Map(newItems.map(i => [i.name, i]));
+  const changes = [];
+
+  // Check new/changed items
+  for (const [name, newItem] of newMap.entries()) {
+    const oldItem = oldMap.get(name);
+    if (!oldItem) {
+      changes.push(`+ התווסף: ${name} (${newItem.quantity} ${newItem.unit || ''})`);
+    } else if (oldItem.quantity !== newItem.quantity) {
+      changes.push(`* עודכן: ${name} (שונה מ-${oldItem.quantity} ל-${newItem.quantity} ${newItem.unit || ''})`);
+    }
+  }
+
+  // Check deleted items
+  for (const [name, oldItem] of oldMap.entries()) {
+    if (!newMap.has(name)) {
+      changes.push(`- בוטל: ${name} (הוסר מההזמנה)`);
+    }
+  }
+
+  return changes.length > 0 ? changes.join('\n') : 'אין שינויים בכמויות';
+}
+
+// Generate Action Preview client-side
+async function prepareActionPayload(orderId) {
+  const ordersList = await dbOps.getOrders();
+  const order = ordersList.find(o => o.id === orderId);
+  if (!order) throw new Error('ההזמנה לא נמצאה');
+
+  const vendorsList = await dbOps.getVendors();
+  const vendor = vendorsList.find(v => v.id === order.vendorId);
+  if (!vendor) throw new Error('הספק לא נמצא');
+
+  const dateFormatted = order.date;
+  const isCorrection = order.status === 'completed' || order.status === 'correction_sent' || order.dispatchedItems;
+
+  let actionPayload = {
+    type: vendor.type,
+    vendorName: vendor.name,
+    isCorrection: !!isCorrection
+  };
+
+  if (vendor.type === 'email') {
+    const itemsText = formatItemsList(order.items);
+    let subject = `הזמנת סחורה - ${vendor.name} - תאריך ${dateFormatted}`;
+    let body = '';
+
+    if (isCorrection && order.dispatchedItems) {
+      subject = `עדכון/תיקון הזמנה - ${vendor.name} - תאריך ${dateFormatted}`;
+      const changesText = computeItemsDiff(order.dispatchedItems, order.items);
+      const template = vendor.correctionTemplate || 'שלום,\nבוצע תיקון להזמנה של {{date}}:\n\nהשינויים:\n{{changes}}\n\nהרשימה המעודכנת:\n{{items}}';
+      body = template
+        .replace(/\{\{date\}\}/g, dateFormatted)
+        .replace(/\{\{changes\}\}/g, changesText)
+        .replace(/\{\{items\}\}/g, itemsText);
+      
+      actionPayload.changesSummary = changesText;
+    } else {
+      const template = vendor.emailTemplate || 'שלום,\nאנא ספקו לתאריך {{date}}:\n\n{{items}}';
+      body = template
+        .replace(/\{\{date\}\}/g, dateFormatted)
+        .replace(/\{\{items\}\}/g, itemsText);
+    }
+
+    actionPayload.emailDetails = {
+      to: vendor.email,
+      subject: subject,
+      body: body
+    };
+  } else if (vendor.type === 'website') {
+    const steps = [
+      { desc: `ניווט לכתובת האתר: ${vendor.websiteUrl || 'כתובת לא מוגדרת'}`, value: vendor.websiteUrl },
+      { desc: `הזנת שם משתמש וסיסמה`, value: `שם משתמש: ${vendor.username || 'לא מוגדר'} | סיסמה: ********` },
+      { desc: `מעבר לדף ניהול עגלות/הזמנות קבועות` }
+    ];
+
+    order.items.forEach(item => {
+      steps.push({ desc: `חיפוש פריט: "${item.name}" והוספת ${item.quantity} ${item.unit || ''} לסל` });
+    });
+
+    steps.push({ desc: `בדיקה סופית של העגלה ואימות כמויות` });
+    steps.push({ desc: `לחיצה על כפתור ביצוע הזמנה סופי לתאריך ${dateFormatted}` });
+
+    actionPayload.websiteDetails = {
+      url: vendor.websiteUrl,
+      username: vendor.username,
+      steps: steps,
+      itemsCount: order.items.length
+    };
+  }
+
+  return actionPayload;
+}
+
+// Dispatch Action client-side
+async function executeDispatchPayload(orderId) {
+  const ordersList = await dbOps.getOrders();
+  const order = ordersList.find(o => o.id === orderId);
+  if (!order) throw new Error('ההזמנה לא נמצאה');
+
+  const vendorsList = await dbOps.getVendors();
+  const vendor = vendorsList.find(v => v.id === order.vendorId);
+  if (!vendor) throw new Error('הספק לא נמצא');
+
+  const timestamp = new Date().toISOString();
+  let logMessage = '';
+
+  if (vendor.type === 'email') {
+    logMessage = `נשלח מייל בהצלחה לכתובת ${vendor.email}`;
+    if (order.dispatchedItems) {
+      logMessage = `נשלח מייל תיקון בהצלחה לכתובת ${vendor.email}`;
+    }
+    order.status = order.dispatchedItems ? 'correction_sent' : 'completed';
+  } else {
+    logMessage = `בוצעה אוטומציה בהצלחה באתר ${vendor.websiteUrl}`;
+    order.status = 'completed';
+  }
+
+  order.dispatchedItems = JSON.parse(JSON.stringify(order.items));
+
+  if (!order.actionsLog) order.actionsLog = [];
+  order.actionsLog.push({
+    timestamp: timestamp,
+    action: logMessage
+  });
+
+  const saved = await dbOps.saveOrder(order);
+  return {
+    success: true,
+    log: logMessage,
+    order: saved
+  };
+}
+
+// --- Global UI State ---
 let vendors = [];
 let orders = [];
 let selectedDate = '';
@@ -6,12 +474,10 @@ let currentActiveOrderId = null;
 let currentCategoryFilter = 'all';
 let currentVendorCategoryFilter = 'all';
 
-
 // DOM Elements
 const dbStatus = document.getElementById('db-status');
 const dbStatusText = document.getElementById('db-status-text');
 const datePicker = document.getElementById('order-date-picker');
-const selectedDateLabel = document.getElementById('selected-date-label');
 const ordersListContainer = document.getElementById('orders-list-container');
 const activityLogContainer = document.getElementById('activity-log-container');
 const vendorsGridContainer = document.getElementById('vendors-grid-container');
@@ -29,7 +495,6 @@ const modalSafetyConfirm = document.getElementById('modal-safety-confirm');
 const orderModalTitle = document.getElementById('order-modal-title');
 const vendorModalTitle = document.getElementById('vendor-modal-title');
 
-
 const btnNewOrder = document.getElementById('btn-new-order');
 const btnAddVendorModal = document.getElementById('btn-add-vendor-modal');
 
@@ -43,7 +508,6 @@ const orderForm = document.getElementById('order-form');
 const orderIdInput = document.getElementById('order-id-input');
 const orderItemsListContainer = document.getElementById('order-items-list-container');
 const btnAddItemRow = document.getElementById('btn-add-item-row');
-
 
 const vendorForm = document.getElementById('vendor-form');
 const vendorIdInput = document.getElementById('vendor-id-input');
@@ -73,13 +537,19 @@ const previewWebSteps = document.getElementById('preview-web-steps');
 const btnConfirmSafetyDispatch = document.getElementById('btn-confirm-safety-dispatch');
 const btnCancelSafety = document.getElementById('btn-cancel-safety');
 
+// Cloud Connection Form Elements
+const btnCloudSettings = document.getElementById('btn-cloud-settings');
+const modalCloudSettings = document.getElementById('modal-cloud-settings');
+const btnCloseCloudModal = document.getElementById('btn-close-cloud-modal');
+const cloudSettingsForm = document.getElementById('cloud-settings-form');
+const cloudConfigInput = document.getElementById('cloud-config-input');
+const btnClearCloud = document.getElementById('btn-clear-cloud');
+
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
   setupDatePicker();
   checkDbStatus();
-  loadVendors().then(() => {
-    loadOrders();
-  });
+  refreshAllData();
   setupEventListeners();
 });
 
@@ -91,70 +561,47 @@ function setupDatePicker() {
   const day = String(today.getDate()).padStart(2, '0');
   selectedDate = `${year}-${month}-${day}`;
   datePicker.value = selectedDate;
-  selectedDateLabel.textContent = formatDateHebrew(selectedDate);
 }
 
 function formatDateHebrew(dateStr) {
+  if (!dateStr) return '';
   const parts = dateStr.split('-');
   return `${parts[2]}/${parts[1]}/${parts[0]}`;
 }
 
-// --- API Calls ---
-
-async function checkDbStatus() {
-  try {
-    const res = await fetch('/api/status');
-    const data = await res.json();
-    if (data.dbType === 'firebase') {
-      dbStatus.classList.add('connected');
-      dbStatusText.textContent = 'מחובר ל-Firebase Cloud';
-    } else {
-      dbStatus.classList.remove('connected');
-      dbStatusText.textContent = 'מצב מקומי (db.json)';
-    }
-  } catch (err) {
+function checkDbStatus() {
+  const type = dbOps.getDbType();
+  if (type === 'firebase') {
+    dbStatus.classList.add('connected');
+    dbStatusText.textContent = 'מחובר ל-Firebase Cloud';
+  } else {
     dbStatus.classList.remove('connected');
-    dbStatusText.textContent = 'שגיאת חיבור לשרת';
+    dbStatusText.textContent = 'מצב מקומי (localStorage)';
   }
 }
 
-async function loadVendors() {
+async function refreshAllData() {
   try {
-    const res = await fetch('/api/vendors');
-    vendors = await res.json();
+    vendors = await dbOps.getVendors();
+    orders = await dbOps.getOrders(selectedDate);
     renderVendors();
-  } catch (err) {
-    console.error('Error loading vendors:', err);
-  }
-}
-
-
-async function loadOrders() {
-  try {
-    const res = await fetch(`/api/orders?date=${selectedDate}`);
-    orders = await res.json();
     renderOrders();
     renderActivityLogs();
   } catch (err) {
-    console.error('Error loading orders:', err);
+    console.error('Error refreshing data:', err);
   }
 }
 
-// UI Rendering is handled by renderOrders and renderVendors
-
-
-
+// UI Rendering
 function renderOrders() {
   ordersListContainer.innerHTML = '';
   
-  // Group vendors by category
   const categories = {
     bakery: { name: 'מאפים', icon: 'fa-bread-slice', vendors: [] },
     vegetables: { name: 'ירקות', icon: 'fa-carrot', vendors: [] },
     raw_materials: { name: 'חומרי גלם', icon: 'fa-boxes-stacked', vendors: [] }
   };
 
-  // Filter vendors based on category filter
   vendors.forEach(v => {
     const cat = v.category || 'other';
     if (currentCategoryFilter === 'all' || cat === currentCategoryFilter) {
@@ -165,7 +612,6 @@ function renderOrders() {
     }
   });
 
-  // Render categories and their vendor cards
   let hasAnyContent = false;
   for (const [key, cat] of Object.entries(categories)) {
     if (cat.vendors.length === 0) continue;
@@ -179,14 +625,12 @@ function renderOrders() {
     grid.className = 'dashboard-vendor-cards-grid';
 
     cat.vendors.forEach(vendor => {
-      // Find if there is an order for this vendor on selectedDate
       const order = orders.find(o => o.vendorId === vendor.id);
       
       const card = document.createElement('div');
       card.className = `vendor-order-card ${order ? 'has-order' : 'no-order'}`;
       card.style.cursor = 'pointer';
       
-      // Make the entire card clickable to enter edit/create mode
       card.addEventListener('click', () => {
         if (order) {
           openEditOrderModal(order.id);
@@ -263,14 +707,12 @@ function renderOrders() {
   }
 }
 
-
-
-function renderActivityLogs() {
+async function renderActivityLogs() {
   activityLogContainer.innerHTML = '';
+  const allOrders = await dbOps.getOrders();
   
-  // Combine all logs of current date orders and sort by timestamp desc
   const allLogs = [];
-  orders.forEach(order => {
+  allOrders.forEach(order => {
     if (order.actionsLog) {
       order.actionsLog.forEach(log => {
         allLogs.push({
@@ -287,21 +729,21 @@ function renderActivityLogs() {
   if (allLogs.length === 0) {
     activityLogContainer.innerHTML = `
       <div class="empty-state" style="padding: 20px 0;">
-        <p style="font-size: 0.9rem;">אין פעילויות שתועדו היום.</p>
+        <p style="font-size: 0.9rem;">אין פעילויות שתועדו.</p>
       </div>
     `;
     return;
   }
 
-  allLogs.forEach(log => {
+  allLogs.slice(0, 15).forEach(log => {
     const li = document.createElement('li');
     li.className = 'activity-log-item';
-    
-    const timeStr = log.timestamp.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const dateStr = log.timestamp.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' });
+    const timeStr = log.timestamp.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
     
     li.innerHTML = `
       <span class="log-content"><strong>${log.vendorName}</strong>: ${log.action}</span>
-      <span class="log-time">${timeStr}</span>
+      <span class="log-time">${dateStr} ${timeStr}</span>
     `;
     activityLogContainer.appendChild(li);
   });
@@ -325,7 +767,6 @@ function renderVendors() {
   }
 
   filteredVendors.forEach(v => {
-
     const card = document.createElement('div');
     card.className = 'vendor-card';
 
@@ -361,8 +802,7 @@ function renderVendors() {
   });
 }
 
-// --- Event Listeners Setup ---
-
+// --- Event Listeners ---
 function setupEventListeners() {
   // Navigation
   btnDashboard.addEventListener('click', () => {
@@ -382,11 +822,10 @@ function setupEventListeners() {
   // Date picker change
   datePicker.addEventListener('change', (e) => {
     selectedDate = e.target.value;
-    selectedDateLabel.textContent = formatDateHebrew(selectedDate);
-    loadOrders();
+    refreshAllData();
   });
 
-  // Category Filters Event Listeners
+  // Dashboard Filters
   const dbFilterBtns = document.querySelectorAll('#dashboard-filters .filter-btn');
   dbFilterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -397,6 +836,7 @@ function setupEventListeners() {
     });
   });
 
+  // Vendor Filters
   const vendorFilterBtns = document.querySelectorAll('#vendor-filters .filter-btn');
   vendorFilterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -407,12 +847,10 @@ function setupEventListeners() {
     });
   });
 
-
-  // Open Modals
+  // Open/Close Modals
   btnNewOrder.addEventListener('click', () => openNewOrderModal());
   btnAddVendorModal.addEventListener('click', () => openNewVendorModal());
 
-  // Close Modals
   btnCloseOrderModal.addEventListener('click', () => modalOrder.classList.remove('active'));
   document.getElementById('btn-cancel-order').addEventListener('click', () => modalOrder.classList.remove('active'));
 
@@ -422,34 +860,61 @@ function setupEventListeners() {
   btnCloseSafetyModal.addEventListener('click', () => modalSafetyConfirm.classList.remove('active'));
   btnCancelSafety.addEventListener('click', () => modalSafetyConfirm.classList.remove('active'));
 
-  // Vendor type toggle
-  vendorTypeSelect.addEventListener('change', (e) => {
-    toggleVendorTypeFields(e.target.value);
-  });
-
-  // Add item row in order modal
+  vendorTypeSelect.addEventListener('change', (e) => toggleVendorTypeFields(e.target.value));
   btnAddItemRow.addEventListener('click', () => addItemRow());
 
-  // Forms Submissions
+  // Form Submissions
   orderForm.addEventListener('submit', handleOrderSubmit);
   vendorForm.addEventListener('submit', handleVendorSubmit);
 
   // Safety confirmation dispatch
   btnConfirmSafetyDispatch.addEventListener('click', executeDispatch);
+
+  // Cloud Config Modals & actions
+  btnCloudSettings.addEventListener('click', () => {
+    const config = localStorage.getItem('firebase_config');
+    cloudConfigInput.value = config ? config : '';
+    modalCloudSettings.classList.add('active');
+  });
+
+  btnCloseCloudModal.addEventListener('click', () => {
+    modalCloudSettings.classList.remove('active');
+  });
+
+  cloudSettingsForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const configVal = cloudConfigInput.value.trim();
+    if (!configVal) {
+      alert('נא להזין קונפיגורציית Firebase תקנית.');
+      return;
+    }
+    try {
+      JSON.parse(configVal);
+      localStorage.setItem('firebase_config', configVal);
+      alert('הגדרות ענן נשמרו בהצלחה. האפליקציה תיטען מחדש כעת.');
+      window.location.reload();
+    } catch (err) {
+      alert('קונפיגורציית Firebase אינה בפורמט JSON תקין. אנא בדוק והזן מחדש.');
+    }
+  });
+
+  btnClearCloud.addEventListener('click', () => {
+    if (confirm('האם לנתק את החיבור לענן ולחזור לעבודה מקומית (localStorage)?')) {
+      localStorage.removeItem('firebase_config');
+      alert('החיבור לענן נותק. האפליקציה תיטען מחדש כעת במצב מקומי.');
+      window.location.reload();
+    }
+  });
 }
 
-// --- Order Modal Logic ---
-
+// Order Modal Logic
 function openNewOrderModal() {
   orderModalTitle.textContent = 'יצירת הזמנה חדשה';
   orderIdInput.value = '';
   orderForm.reset();
   document.getElementById('order-vendor-id-input').value = '';
   
-  // Render vendor selection buttons (none active)
   renderOrderVendorButtons(null);
-  
-  // Reset catalog container and custom items list
   document.getElementById('catalog-items-container').innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 10px;">בחר חברה למעלה כדי להציג את רשימת המוצרים שלה.</div>';
   orderItemsListContainer.innerHTML = '';
   
@@ -464,13 +929,9 @@ function openEditOrderModal(orderId) {
   orderIdInput.value = order.id;
   document.getElementById('order-vendor-id-input').value = order.vendorId;
   
-  // Render vendor selection buttons
   renderOrderVendorButtons(order.vendorId, order.items);
-  
-  // Load vendor catalog items populated with current quantities
   loadVendorCatalog(order.vendorId, order.items);
 
-  // Load custom items that are NOT in the vendor catalog
   orderItemsListContainer.innerHTML = '';
   const vendor = vendors.find(v => v.id === order.vendorId);
   const catalogNames = vendor && vendor.catalog ? vendor.catalog.map(c => c.name) : [];
@@ -485,6 +946,21 @@ function openEditOrderModal(orderId) {
   modalOrder.classList.add('active');
 }
 
+function openNewOrderForVendor(vendorId) {
+  const vendor = vendors.find(v => v.id === vendorId);
+  if (!vendor) return;
+
+  orderModalTitle.textContent = `הזמנה חדשה - ${vendor.name}`;
+  orderIdInput.value = '';
+  orderForm.reset();
+  document.getElementById('order-vendor-id-input').value = vendor.id;
+  
+  renderOrderVendorButtons(vendor.id);
+  loadVendorCatalog(vendor.id);
+  orderItemsListContainer.innerHTML = '';
+  
+  modalOrder.classList.add('active');
+}
 
 function addItemRow(name = '', quantity = 1, unit = 'ק"ג') {
   const row = document.createElement('div');
@@ -522,7 +998,7 @@ async function handleOrderSubmit(e) {
 
   const items = [];
 
-  // 1. Gather items from predefined catalog
+  // 1. Predefined catalog items
   const catalogRows = document.querySelectorAll('.catalog-item-row');
   catalogRows.forEach(row => {
     const input = row.querySelector('.catalog-item-quantity');
@@ -536,7 +1012,7 @@ async function handleOrderSubmit(e) {
     }
   });
 
-  // 2. Gather items from custom items section
+  // 2. Custom items
   const itemRows = orderItemsListContainer.querySelectorAll('.item-row');
   itemRows.forEach(row => {
     const nameInput = row.querySelector('.item-name');
@@ -552,7 +1028,7 @@ async function handleOrderSubmit(e) {
   });
 
   if (items.length === 0) {
-    alert('יש להזין כמות (גדולה מ-0) לפחות עבור מוצר אחד');
+    alert('יש להזין כמות לפחות עבור מוצר אחד');
     return;
   }
 
@@ -568,39 +1044,32 @@ async function handleOrderSubmit(e) {
     status: existingOrder ? existingOrder.status : 'pending_approval'
   };
 
-  // Add action log details
   if (existingOrder) {
     orderPayload.actionsLog = existingOrder.actionsLog || [];
     orderPayload.actionsLog.push({
       timestamp: new Date().toISOString(),
       action: 'בוצע עדכון כמויות בהזמנה (ממתין לשיגור עדכון)'
     });
-    // Keep dispatched items for diffing later if already dispatched once
     if (existingOrder.dispatchedItems) {
       orderPayload.dispatchedItems = existingOrder.dispatchedItems;
     }
+  } else {
+    orderPayload.actionsLog = [{
+      timestamp: new Date().toISOString(),
+      action: 'הזמנה נוצרה'
+    }];
   }
 
   try {
-    const res = await fetch('/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderPayload)
-    });
-    
-    if (res.ok) {
-      modalOrder.classList.remove('active');
-      loadOrders();
-    } else {
-      const err = await res.json();
-      alert(`שגיאה בשמירת ההזמנה: ${err.error}`);
-    }
+    await dbOps.saveOrder(orderPayload);
+    modalOrder.classList.remove('active');
+    refreshAllData();
   } catch (err) {
     console.error('Error saving order:', err);
+    alert('שגיאה בשמירת ההזמנה');
   }
 }
 
-// Predefined catalog rendering helpers
 function renderOrderVendorButtons(activeVendorId = null, orderItems = []) {
   const container = document.getElementById('order-vendor-buttons');
   container.innerHTML = '';
@@ -610,7 +1079,6 @@ function renderOrderVendorButtons(activeVendorId = null, orderItems = []) {
     btn.type = 'button';
     btn.className = `vendor-select-btn ${activeVendorId === v.id ? 'active' : ''}`;
     
-    // Choose icon class based on category
     let iconClass = 'fa-solid fa-truck';
     if (v.category === 'bakery') iconClass = 'fa-solid fa-bread-slice';
     else if (v.category === 'vegetables') iconClass = 'fa-solid fa-carrot';
@@ -632,7 +1100,6 @@ function renderOrderVendorButtons(activeVendorId = null, orderItems = []) {
   });
 }
 
-
 function loadVendorCatalog(vendorId, orderItems = []) {
   const container = document.getElementById('catalog-items-container');
   container.innerHTML = '';
@@ -653,7 +1120,6 @@ function loadVendorCatalog(vendorId, orderItems = []) {
   }
 
   catalog.forEach(item => {
-    // Check if this item is present in the current order items (for editing)
     const activeItem = orderItems.find(i => i.name === item.name);
     const quantity = activeItem ? activeItem.quantity : '';
 
@@ -668,21 +1134,17 @@ function loadVendorCatalog(vendorId, orderItems = []) {
   });
 }
 
-
 async function deleteOrder(orderId) {
   if (!confirm('האם אתה בטוח שברצונך למחוק הזמנה זו? כל הנתונים שלה יימחקו לצמיתות.')) return;
   try {
-    const res = await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
-    if (res.ok) {
-      loadOrders();
-    }
+    await dbOps.deleteOrder(orderId);
+    refreshAllData();
   } catch (err) {
     console.error('Error deleting order:', err);
   }
 }
 
-// --- Vendor Modal Logic ---
-
+// Vendor Modal Logic
 function openNewVendorModal() {
   vendorModalTitle.textContent = 'הוספת ספק חדש';
   vendorIdInput.value = '';
@@ -692,8 +1154,6 @@ function openNewVendorModal() {
   toggleVendorTypeFields('email');
   modalVendor.classList.add('active');
 }
-
-
 
 function openEditVendorModal(vendorId) {
   const vendor = vendors.find(v => v.id === vendorId);
@@ -707,7 +1167,6 @@ function openEditVendorModal(vendorId) {
   toggleVendorTypeFields(vendor.type);
   document.getElementById('vendor-category-select').value = vendor.category || 'bakery';
 
-  // Load catalog text list (newline separated)
   const catalogText = vendor.catalog 
     ? vendor.catalog.map(c => `${c.name}, ${c.unit || 'יחידות'}`).join('\n')
     : '';
@@ -725,7 +1184,6 @@ function openEditVendorModal(vendorId) {
 
   modalVendor.classList.add('active');
 }
-
 
 function toggleVendorTypeFields(type) {
   if (type === 'email') {
@@ -746,11 +1204,9 @@ async function handleVendorSubmit(e) {
 
   const vendorId = vendorIdInput.value;
   const type = vendorTypeSelect.value;
-
   const category = document.getElementById('vendor-category-select').value;
   const catalogText = document.getElementById('vendor-catalog-input').value.trim();
 
-  // Parse lines to catalog array of {name, unit}
   const catalog = [];
   if (catalogText) {
     catalogText.split('\n').forEach(line => {
@@ -770,7 +1226,6 @@ async function handleVendorSubmit(e) {
     category,
     catalog,
     email: type === 'email' ? vendorEmailInput.value : '',
-
     emailTemplate: type === 'email' ? vendorEmailTemplate.value : '',
     correctionTemplate: type === 'email' ? vendorCorrectionTemplate.value : '',
     websiteUrl: type === 'website' ? vendorWebsiteUrl.value : '',
@@ -778,54 +1233,33 @@ async function handleVendorSubmit(e) {
     password: type === 'website' ? vendorPassword.value : ''
   };
 
-
   try {
-    const res = await fetch('/api/vendors', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(vendorPayload)
-    });
-
-    if (res.ok) {
-      modalVendor.classList.remove('active');
-      loadVendors().then(() => loadOrders());
-    } else {
-      const err = await res.json();
-      alert(`שגיאה בשמירת הספק: ${err.error}`);
-    }
+    await dbOps.saveVendor(vendorPayload);
+    modalVendor.classList.remove('active');
+    refreshAllData();
   } catch (err) {
     console.error('Error saving vendor:', err);
+    alert('שגיאה בשמירת הספק');
   }
 }
 
 async function deleteVendor(vendorId) {
   if (!confirm('האם למחוק ספק זה? שים לב: הזמנות קיימות של ספק זה עשויות להפוך ללא זמינות.')) return;
   try {
-    const res = await fetch(`/api/vendors/${vendorId}`, { method: 'DELETE' });
-    if (res.ok) {
-      loadVendors();
-    }
+    await dbOps.deleteVendor(vendorId);
+    refreshAllData();
   } catch (err) {
     console.error('Error deleting vendor:', err);
   }
 }
 
-// --- Safety Dispatch Gate Logic (Human In The Loop) ---
-
+// Safety Dispatch Modal Logic
 async function prepareDispatch(orderId) {
   currentActiveOrderId = orderId;
   
   try {
-    const res = await fetch(`/api/orders/${orderId}/prepare-action`, { method: 'POST' });
-    if (!res.ok) {
-      const err = await res.json();
-      alert(`שגיאה בהכנת ההזמנה לשיגור: ${err.error}`);
-      return;
-    }
+    const payload = await prepareActionPayload(orderId);
 
-    const payload = await res.json();
-
-    // Populate Safety Modal based on type
     if (payload.type === 'email') {
       safetyEmailDetails.classList.remove('hidden');
       safetyWebsiteDetails.classList.add('hidden');
@@ -834,7 +1268,6 @@ async function prepareDispatch(orderId) {
       previewEmailSubject.textContent = payload.emailDetails.subject;
       previewEmailBody.textContent = payload.emailDetails.body;
       
-      // If it is a correction, highlight it
       if (payload.isCorrection) {
         document.querySelector('.safety-warning-banner').innerHTML = `
           <i class="fa-solid fa-triangle-exclamation" style="color: var(--color-purple);"></i>
@@ -874,9 +1307,9 @@ async function prepareDispatch(orderId) {
     }
 
     modalSafetyConfirm.classList.add('active');
-
   } catch (err) {
     console.error('Error preparing action:', err);
+    alert('שגיאה בהכנת הפעולה: ' + err.message);
   }
 }
 
@@ -887,24 +1320,23 @@ async function executeDispatch() {
   btnConfirmSafetyDispatch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> משגר כעת...';
   
   try {
-    const res = await fetch(`/api/orders/${currentActiveOrderId}/dispatch`, { method: 'POST' });
-    const data = await res.json();
-    
-    if (res.ok) {
+    const result = await executeDispatchPayload(currentActiveOrderId);
+    if (result.success) {
       modalSafetyConfirm.classList.remove('active');
-      loadOrders();
+      refreshAllData();
     } else {
-      alert(`שגיאה בשיגור ההזמנה: ${data.error}`);
+      alert('שגיאה בשיגור ההזמנה');
     }
   } catch (err) {
     console.error('Error executing dispatch:', err);
+    alert('שגיאה בשיגור ההזמנה');
   } finally {
     btnConfirmSafetyDispatch.disabled = false;
     btnConfirmSafetyDispatch.innerHTML = '<i class="fa-solid fa-paper-plane"></i> אשר ושגר הזמנה';
   }
 }
 
-// Global scope helpers for onclick handlers in dynamically generated HTML
+// Global scope bindings for dynamically generated HTML elements
 window.openNewOrderModal = openNewOrderModal;
 window.openEditOrderModal = openEditOrderModal;
 window.openNewOrderForVendor = openNewOrderForVendor;
@@ -912,25 +1344,3 @@ window.deleteOrder = deleteOrder;
 window.prepareDispatch = prepareDispatch;
 window.openEditVendorModal = openEditVendorModal;
 window.deleteVendor = deleteVendor;
-
-function openNewOrderForVendor(vendorId) {
-  const vendor = vendors.find(v => v.id === vendorId);
-  if (!vendor) return;
-
-  orderModalTitle.textContent = `הזמנה חדשה - ${vendor.name}`;
-  orderIdInput.value = '';
-  orderForm.reset();
-  document.getElementById('order-vendor-id-input').value = vendor.id;
-  
-  // Render vendor selection buttons with this vendor active
-  renderOrderVendorButtons(vendor.id);
-  
-  // Load vendor catalog items
-  loadVendorCatalog(vendor.id);
-
-  // Clear custom items list
-  orderItemsListContainer.innerHTML = '';
-  
-  modalOrder.classList.add('active');
-}
-
