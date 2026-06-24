@@ -44,6 +44,9 @@
         <button class="btn btn-secondary btn-sm" id="btn-cloud-settings" style="width: 100%; margin-top: 10px; display: flex; gap: 8px; justify-content: center;">
           <i class="fa-solid fa-cloud"></i> הגדרות חיבור ענן
         </button>
+        <button class="btn btn-secondary btn-sm" id="btn-data-management" style="width: 100%; margin-top: 8px; display: flex; gap: 8px; justify-content: center;">
+          <i class="fa-solid fa-database"></i> ניהול נתונים וגיבויים
+        </button>
       </div>
     </aside>
 
@@ -335,6 +338,43 @@
           <button type="submit" class="btn btn-primary">שמור והתחבר</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal: Data & Backup Management -->
+  <div class="modal" id="modal-data-management">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>ניהול גיבויים ונתוני מערכת</h3>
+        <button class="close-modal-btn" id="btn-close-data-modal">&times;</button>
+      </div>
+      <div style="padding: 20px 0; display: flex; flex-direction: column; gap: 16px;">
+        <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5; text-align: right;">
+          כדי להבטיח שלא תאבד נתונים במהלך עבודה או בדיקות, תוכל לגבות את כל המידע (ספקים והזמנות) לקובץ במחשב שלך, או לשחזר אותו בכל עת.
+        </p>
+        
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+          <!-- Export -->
+          <button type="button" class="btn btn-primary" id="btn-export-db" style="width: 100%; justify-content: center; display: flex; gap: 8px;">
+            <i class="fa-solid fa-download"></i> גיבוי נתונים לקובץ (ייצוא JSON)
+          </button>
+          
+          <!-- Import -->
+          <div style="position: relative; width: 100%;">
+            <input type="file" id="input-import-db" accept=".json" style="display: none;">
+            <button type="button" class="btn btn-secondary" id="btn-trigger-import" style="width: 100%; justify-content: center; display: flex; gap: 8px;">
+              <i class="fa-solid fa-upload"></i> שחזור גיבוי מקובץ (ייבוא JSON)
+            </button>
+          </div>
+          
+          <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 10px 0;">
+          
+          <!-- Reset to Seed -->
+          <button type="button" class="btn btn-secondary" id="btn-reset-seed" style="width: 100%; justify-content: center; display: flex; gap: 8px; color: var(--color-warning); border-color: rgba(245, 158, 11, 0.3);">
+            <i class="fa-solid fa-arrow-rotate-left"></i> איפוס המערכת לנתוני ברירת המחדל
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 

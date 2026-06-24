@@ -545,6 +545,15 @@ const cloudSettingsForm = document.getElementById('cloud-settings-form');
 const cloudConfigInput = document.getElementById('cloud-config-input');
 const btnClearCloud = document.getElementById('btn-clear-cloud');
 
+// Data Management Elements
+const btnDataManagement = document.getElementById('btn-data-management');
+const modalDataManagement = document.getElementById('modal-data-management');
+const btnCloseDataModal = document.getElementById('btn-close-data-modal');
+const btnExportDb = document.getElementById('btn-export-db');
+const btnTriggerImport = document.getElementById('btn-trigger-import');
+const inputImportDb = document.getElementById('input-import-db');
+const btnResetSeed = document.getElementById('btn-reset-seed');
+
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
   setupDatePicker();
@@ -908,6 +917,63 @@ function setupEventListeners() {
     if (confirm('האם לנתק את החיבור לענן ולחזור לעבודה מקומית (localStorage)?')) {
       localStorage.removeItem('firebase_config');
       alert('החיבור לענן נותק. האפליקציה תיטען מחדש כעת במצב מקומי.');
+      window.location.reload();
+    }
+  });
+
+  // Data & Backup Management Listeners
+  btnDataManagement.addEventListener('click', () => {
+    modalDataManagement.classList.add('active');
+  });
+
+  btnCloseDataModal.addEventListener('click', () => {
+    modalDataManagement.classList.remove('active');
+  });
+
+  btnExportDb.addEventListener('click', () => {
+    const dbData = getLocalDB();
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dbData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    const date = new Date().toISOString().split('T')[0];
+    downloadAnchor.setAttribute("href",     dataStr);
+    downloadAnchor.setAttribute("download", `order_safe_backup_${date}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  });
+
+  btnTriggerImport.addEventListener('click', () => {
+    inputImportDb.click();
+  });
+
+  inputImportDb.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        const parsed = JSON.parse(evt.target.result);
+        if (parsed.vendors && parsed.orders) {
+          if (confirm('האם אתה בטוח שברצונך לדרוס את כל הנתונים הנוכחיים ולשחזר מהקובץ הנבחר?')) {
+            writeLocalDB(parsed);
+            alert('הנתונים שוחזרו בהצלחה! האפליקציה תיטען מחדש כעת.');
+            window.location.reload();
+          }
+        } else {
+          alert('קובץ הגיבוי אינו תקין (חסרים שדות ספקים או הזמנות).');
+        }
+      } catch(err) {
+        alert('שגיאה בקריאת קובץ הגיבוי. ודא שזהו קובץ JSON תקין.');
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  btnResetSeed.addEventListener('click', () => {
+    if (confirm('אזהרה: פעולה זו תמחוק את כל השינויים וההזמנות שביצעת ותחזיר את המערכת למצב ברירת המחדל (הספקים והמוצרים המקוריים). האם להמשיך?')) {
+      localStorage.removeItem('order_automation_db');
+      alert('המערכת אותחלה בהצלחה לנתוני ברירת המחדל! האפליקציה תיטען מחדש כעת.');
       window.location.reload();
     }
   });
