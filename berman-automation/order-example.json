@@ -1,0 +1,10 @@
+{
+  "date": "",
+  "vendor": "berman",
+  "vendorName": "מאפיית ברמן",
+  "items": [
+    { "sku": "101",  "name": "לחם אחיד פרוס ברמן",     "quantity": 50 },
+    { "sku": "238",  "name": "ברמן אסלי 5 פיתות",       "quantity": 20 },
+    { "sku": "1194", "name": "לחם מקמח מלא תו ירוק",   "quantity": 10 }
+  ]
+}

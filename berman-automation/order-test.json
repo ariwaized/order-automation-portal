@@ -1,0 +1,9 @@
+{
+  "date": "02-07-2026",
+  "vendor": "berman",
+  "vendorName": "מאפיית ברמן",
+  "items": [
+    { "sku": "238",  "name": "ברמן אסלי 5 פיתות",     "quantity": 5 },
+    { "sku": "1194", "name": "לחם מקמח מלא תו ירוק",  "quantity": 1 }
+  ]
+}

@@ -445,9 +445,31 @@ async function executeDispatchPayload(orderId) {
       logMessage = `נשלח מייל תיקון בהצלחה לכתובת ${vendor.email}`;
     }
     order.status = order.dispatchedItems ? 'correction_sent' : 'completed';
-  } else {
-    logMessage = `בוצעה אוטומציה בהצלחה באתר ${vendor.websiteUrl}`;
-    order.status = 'completed';
+  } else if (vendor.type === 'website') {
+    if (vendor.id === 'v_berman') {
+      try {
+        const response = await fetch('/api/dispatch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            vendorId: vendor.id,
+            credentials: { username: vendor.username, password: vendor.password },
+            orderData: order
+          })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'שגיאה בביצוע האוטומציה דרך השרת');
+        }
+        logMessage = `בוצעה אוטומציה בהצלחה באתר ${vendor.websiteUrl}: ${result.message || ''}`;
+        order.status = 'completed';
+      } catch (err) {
+        throw new Error('האוטומציה נכשלה: ' + err.message);
+      }
+    } else {
+      logMessage = `סימולציית אוטומציה (דמו) באתר ${vendor.websiteUrl} (הספק לא נתמך במלואו עדיין)`;
+      order.status = 'completed';
+    }
   }
 
   order.dispatchedItems = JSON.parse(JSON.stringify(order.items));

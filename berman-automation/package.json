@@ -1,0 +1,13 @@
+{
+  "name": "berman-automation",
+  "version": "1.0.0",
+  "description": "אוטומציה להזמנות ממאפיית ברמן עם Playwright",
+  "main": "berman-order.js",
+  "scripts": {
+    "order": "node berman-order.js",
+    "install-browsers": "npx playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.44.0"
+  }
+}
