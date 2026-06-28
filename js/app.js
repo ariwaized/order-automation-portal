@@ -448,7 +448,7 @@ async function executeDispatchPayload(orderId) {
   } else if (vendor.type === 'website') {
     if (vendor.id === 'v_berman') {
       try {
-        const response = await fetch('/api/dispatch', {
+        const response = await fetch('http://localhost:3000/api/dispatch', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
