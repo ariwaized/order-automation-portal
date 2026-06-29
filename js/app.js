@@ -6,9 +6,9 @@ const DEFAULT_VENDORS = [
     "category": "bakery",
     "type": "website",
     "email": "",
-    "websiteUrl": "https://berman.co.il/portal",
-    "username": "berman_user",
-    "password": "PasswordBerman1",
+    "websiteUrl": "https://bermanapp.co.il/#/",
+    "username": "23987",
+    "password": "bikurim2023",
     "emailTemplate": "",
     "correctionTemplate": "",
     "catalog": [
