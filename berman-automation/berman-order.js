@@ -170,7 +170,14 @@ async function executeBermanOrder(order, credentials) {
 
     for (let i = 0; i < order.items.length; i++) {
       const item = order.items[i];
-      console.log(`\n   [${i + 1}/${order.items.length}] מק"ט ${item.sku} — ${item.name}`);
+      let itemSku = item.sku;
+      if (!itemSku && item.name) {
+        const match = item.name.match(/^(\d+)/);
+        if (match) itemSku = match[1];
+      }
+      itemSku = String(itemSku || item.name);
+
+      console.log(`\n   [${i + 1}/${order.items.length}] מק"ט ${itemSku} — ${item.name}`);
 
       // חיפוש
       const openSearchBtn = page.locator('button.icon').filter({ has: page.locator('img[src*="search-amit.svg"]') }).first();
@@ -183,11 +190,11 @@ async function executeBermanOrder(order, credentials) {
       const searchInput = page.getByPlaceholder('חיפוש מוצר...');
       await searchInput.waitFor({ state: 'visible', timeout: 10000 });
       await searchInput.click({ clickCount: 3 });
-      await searchInput.fill(String(item.sku));
+      await searchInput.fill(itemSku);
       
       // הוספתי המתנה ארוכה יותר כדי שהאתר האיטי יספיק להגיב
       await page.waitForTimeout(3000); 
-      console.log(`   ✅ מק"ט ${item.sku} הוקלד בהצלחה`);
+      console.log(`   ✅ מק"ט ${itemSku} הוקלד בהצלחה`);
 
       // סגירת פופ אפ שאולי קפץ פתאום והפריע
       const didClosePopup = await closePopupIfExists(page, 'בדיקת פופ-אפ בזמן חיפוש');
@@ -195,12 +202,12 @@ async function executeBermanOrder(order, credentials) {
       if (didClosePopup) {
         console.log('   🔄 הפופ-אפ הפריע! מזין את המק"ט מחדש...');
         await searchInput.click({ clickCount: 3 });
-        await searchInput.fill(String(item.sku));
+        await searchInput.fill(itemSku);
         await page.waitForTimeout(3000);
       }
 
       // איתור הפריט המדויק
-      const skuLabel = `מק"ט: ${item.sku}`;
+      const skuLabel = `מק"ט: ${itemSku}`;
       const exactCard = page.locator('div, li, article').filter({ hasText: skuLabel }).first();
       await exactCard.waitFor({ state: 'visible', timeout: 15000 });
 
