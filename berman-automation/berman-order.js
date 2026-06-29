@@ -90,7 +90,14 @@ async function executeBermanOrder(order, credentials) {
     throw new Error('❌ אין פריטים בהזמנה.');
   }
 
-  const targetDate = order.date || getTomorrowDate();
+  let targetDate = order.date || getTomorrowDate();
+  
+  // אם התאריך הגיע מהפורטל בפורמט של מערכת (YYYY-MM-DD), נמיר אותו לפורמט של ברמן (DD-MM-YYYY)
+  if (targetDate && targetDate.includes('-') && targetDate.split('-')[0].length === 4) {
+    const [yyyy, mm, dd] = targetDate.split('-');
+    targetDate = `${dd}-${mm}-${yyyy}`;
+  }
+
   printPreview(order, targetDate, credentials);
 
   // ספירה לאחור לפני התחלה - אפשרות לבטל
