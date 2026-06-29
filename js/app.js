@@ -12,10 +12,8 @@ const DEFAULT_VENDORS = [
     "emailTemplate": "",
     "correctionTemplate": "",
     "catalog": [
-      { "name": "לחם אחיד פרוס", "unit": "יחידות" },
-      { "name": "חלות שבת", "unit": "יחידות" },
-      { "name": "לחמניות המבורגר", "unit": "יחידות" },
-      { "name": "לחם לבן פרוס", "unit": "יחידות" }
+      { "name": "238 - ברמן אסלי 5 פיתות", "unit": "יחידות" },
+      { "name": "1194 - לחם רוסי", "unit": "יחידות" }
     ]
   },
   {
