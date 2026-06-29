@@ -12,8 +12,8 @@ const DEFAULT_VENDORS = [
     "emailTemplate": "",
     "correctionTemplate": "",
     "catalog": [
-      { "name": "238 - ברמן אסלי 5 פיתות", "unit": "יחידות" },
-      { "name": "1194 - לחם רוסי", "unit": "יחידות" }
+      { "name": "ברמן אסלי 5 פיתות", "unit": "יחידות", "sku": "238" },
+      { "name": "לחם רוסי", "unit": "יחידות", "sku": "1194" }
     ]
   },
   {
@@ -1084,7 +1084,8 @@ async function handleOrderSubmit(e) {
       items.push({
         name: input.getAttribute('data-name'),
         quantity: quantity,
-        unit: input.getAttribute('data-unit')
+        unit: input.getAttribute('data-unit'),
+        sku: input.getAttribute('data-sku') || undefined
       });
     }
   });
@@ -1183,7 +1184,7 @@ function loadVendorCatalog(vendorId, orderItems = []) {
     row.className = 'catalog-item-row';
     row.innerHTML = `
       <span class="catalog-item-name">${item.name}</span>
-      <input type="number" class="form-control catalog-item-quantity" data-name="${item.name}" data-unit="${item.unit}" placeholder="כמות" min="0" step="any" value="${quantity}">
+      <input type="number" class="form-control catalog-item-quantity" data-name="${item.name}" data-unit="${item.unit}" data-sku="${item.sku || ''}" placeholder="כמות" min="0" step="any" value="${quantity}">
       <span class="catalog-item-unit-label">${item.unit}</span>
     `;
     container.appendChild(row);
@@ -1224,7 +1225,7 @@ function openEditVendorModal(vendorId) {
   document.getElementById('vendor-category-select').value = vendor.category || 'bakery';
 
   const catalogText = vendor.catalog 
-    ? vendor.catalog.map(c => `${c.name}, ${c.unit || 'יחידות'}`).join('\n')
+    ? vendor.catalog.map(c => c.sku ? `${c.name}, ${c.unit || 'יחידות'}, ${c.sku}` : `${c.name}, ${c.unit || 'יחידות'}`).join('\n')
     : '';
   document.getElementById('vendor-catalog-input').value = catalogText;
 
@@ -1269,8 +1270,10 @@ async function handleVendorSubmit(e) {
       const parts = line.split(',');
       const name = parts[0]?.trim();
       const unit = parts[1]?.trim() || 'יחידות';
+      const sku = parts[2]?.trim() || '';
       if (name) {
-        catalog.push({ name, unit });
+        if (sku) catalog.push({ name, unit, sku });
+        else catalog.push({ name, unit });
       }
     });
   }
