@@ -590,6 +590,15 @@ function setupDatePicker() {
   const day = String(today.getDate()).padStart(2, '0');
   selectedDate = `${year}-${month}-${day}`;
   datePicker.value = selectedDate;
+
+  // Make the entire input clickable to show the native calendar picker (works in modern browsers)
+  datePicker.addEventListener('click', function() {
+    if (typeof this.showPicker === 'function') {
+      try {
+        this.showPicker();
+      } catch(e) {}
+    }
+  });
 }
 
 function formatDateHebrew(dateStr) {
