@@ -171,11 +171,14 @@ async function executeBermanOrder(order, credentials) {
     for (let i = 0; i < order.items.length; i++) {
       const item = order.items[i];
       let itemSku = item.sku;
+      
+      // אם אין מק"ט מפורש (למשל פריט שהוזן ידנית), נחפש את המספר הראשון בתוך השם
       if (!itemSku && item.name) {
-        const match = item.name.match(/^(\d+)/);
+        const match = item.name.match(/(\d+)/);
         if (match) itemSku = match[1];
       }
-      itemSku = String(itemSku || item.name);
+      
+      itemSku = String(itemSku || item.name).trim();
 
       console.log(`\n   [${i + 1}/${order.items.length}] מק"ט ${itemSku} — ${item.name}`);
 
