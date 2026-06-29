@@ -1013,6 +1013,9 @@ function openEditOrderModal(orderId) {
   const order = orders.find(o => o.id === orderId);
   if (!order) return;
 
+  const bermanErr = validateBermanRules(order.vendorId, true);
+  if (bermanErr) { alert(bermanErr); return; }
+
   orderModalTitle.textContent = `עריכת הזמנה - ${order.vendorName}`;
   orderIdInput.value = order.id;
   document.getElementById('order-vendor-id-input').value = order.vendorId;
@@ -1030,12 +1033,17 @@ function openEditOrderModal(orderId) {
     });
   }
   
+  
+  updateBermanModalUI(order.vendorId);
   modalOrder.classList.add('active');
 }
 
 function openNewOrderForVendor(vendorId) {
   const vendor = vendors.find(v => v.id === vendorId);
   if (!vendor) return;
+
+  const bermanErr = validateBermanRules(vendorId, true);
+  if (bermanErr) { alert(bermanErr); return; }
 
   orderModalTitle.textContent = `הזמנה חדשה - ${vendor.name}`;
   orderIdInput.value = '';
@@ -1045,6 +1053,7 @@ function openNewOrderForVendor(vendorId) {
   loadVendorCatalog(vendor.id);
   orderItemsListContainer.innerHTML = '';
   
+  updateBermanModalUI(vendor.id);
   modalOrder.classList.add('active');
 }
 
@@ -1116,6 +1125,12 @@ async function handleOrderSubmit(e) {
 
   if (items.length === 0) {
     alert('יש להזין כמות לפחות עבור מוצר אחד');
+    return;
+  }
+
+  const bermanErr = validateBermanRules(vendorId, false, items, lastSubmitType === 'dispatch');
+  if (bermanErr) {
+    alert(bermanErr);
     return;
   }
 
@@ -1309,6 +1324,78 @@ async function handleVendorSubmit(e) {
     console.error('Error saving vendor:', err);
     alert('שגיאה בשמירת הספק');
   }
+}
+
+async function runAutomationLocally(payload) {
+  alert('שילוח אוטומטי זמין רק דרך התוכנה המקומית ולא דרך גיטהאב.\nאנא פתח את המערכת ב- localhost:3000');
+}
+
+// --- Berman Business Rules ---
+
+function validateBermanRules(vendorId, isOpeningModal = false, items = [], isDispatch = false) {
+  if (vendorId !== 'v_berman') return null;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const target = new Date(selectedDate);
+  target.setHours(0, 0, 0, 0);
+
+  const diffTime = target - today;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  // Rule 3: Cutoff 14:00 the day before
+  if (diffDays <= 1) {
+    const currentHour = new Date().getHours();
+    if (diffDays < 1 || (diffDays === 1 && currentHour >= 14)) {
+      if (isOpeningModal) {
+        return "לא ניתן ליצור או לערוך הזמנה לברמן למחר אחרי השעה 14:00 (או לתאריכי עבר).";
+      }
+      return "לא ניתן לשמור או לשגר: חלף זמן ההזמנה לברמן (14:00 יום לפני).";
+    }
+  }
+
+  if (isOpeningModal) return null;
+
+  // Rule 1: Min 15 items
+  let totalQuantity = 0;
+  items.forEach(item => { totalQuantity += (item.quantity || 0); });
+  if (totalQuantity < 15) {
+    return `לברמן יש להזמין מינימום 15 פריטים סך הכל (בכל הסוגים יחד). כרגע הזנת ${totalQuantity}.`;
+  }
+
+  // Rule 2: Max 4 days in advance for dispatching
+  if (isDispatch && diffDays > 4) {
+    return "לא ניתן לשגר הזמנה לברמן יותר מ-4 ימים מראש. ניתן רק לשמור כטיוטה.";
+  }
+
+  return null;
+}
+
+function updateBermanModalUI(vendorId) {
+  const dispatchBtn = document.getElementById('btn-save-and-dispatch');
+  
+  if (vendorId === 'v_berman') {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(selectedDate);
+    target.setHours(0, 0, 0, 0);
+    const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays > 4) {
+      dispatchBtn.disabled = true;
+      dispatchBtn.title = "לא ניתן לשגר לברמן יותר מ-4 ימים מראש. שמור כטיוטה.";
+      dispatchBtn.style.opacity = "0.5";
+      dispatchBtn.style.cursor = "not-allowed";
+      return;
+    }
+  }
+  
+  // Default state for non-Berman or valid Berman
+  dispatchBtn.disabled = false;
+  dispatchBtn.title = "";
+  dispatchBtn.style.opacity = "1";
+  dispatchBtn.style.cursor = "pointer";
 }
 
 async function deleteVendor(vendorId) {
