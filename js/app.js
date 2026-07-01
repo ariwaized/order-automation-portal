@@ -289,34 +289,35 @@ const dbOps = {
 
   // Orders CRUD
   getOrders: async (date) => {
+    let firebaseOrders = [];
     if (isFirebaseConnected && firebaseDb) {
       try {
-        const snapshotAll = await firebaseDb.collection('orders').get();
-        if (snapshotAll.empty) {
-          // Sync seed orders to Firebase
-          const local = getLocalDB();
-          for (const o of local.orders) {
-            const copy = { ...o };
-            delete copy.id;
-            await firebaseDb.collection('orders').doc(o.id).set(copy);
-          }
-        }
-        
         let query = firebaseDb.collection('orders');
         if (date) {
           query = query.where('date', '==', date);
         }
         const snapshot = await query.get();
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        firebaseOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       } catch (err) {
-        console.error("Firebase getOrders error, falling back to local:", err);
+        console.error("Firebase getOrders error:", err);
       }
     }
+    
+    // Fetch local orders
     const localData = getLocalDB();
-    if (date) {
-      return localData.orders.filter(o => o.date === date);
-    }
-    return localData.orders;
+    const localOrders = date 
+      ? localData.orders.filter(o => o.date === date)
+      : localData.orders;
+      
+    // Merge: Keep all Firebase orders, add local orders only if their ID doesn't exist in Firebase
+    const mergedOrders = [...firebaseOrders];
+    localOrders.forEach(lo => {
+      if (!mergedOrders.some(fo => fo.id === lo.id)) {
+        mergedOrders.push(lo);
+      }
+    });
+    
+    return mergedOrders;
   },
 
   saveOrder: async (order) => {
