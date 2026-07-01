@@ -166,23 +166,41 @@ function writeLocalDB(data) {
 
 // --- Firebase Initialization (if configured) ---
 let firebaseDb = null;
+let firebaseAuth = null;
 let isFirebaseConnected = false;
+let currentUserRole = 'viewer'; // default fallback
 
-const fbConfigStr = localStorage.getItem('firebase_config');
-if (fbConfigStr) {
-  try {
-    const firebaseConfig = JSON.parse(fbConfigStr);
-    if (typeof firebase !== 'undefined') {
-      if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-      }
-      firebaseDb = firebase.firestore();
-      isFirebaseConnected = true;
-      console.log('Connected to Firebase Firestore successfully.');
+let fbConfigStr = localStorage.getItem('firebase_config');
+if (!fbConfigStr) {
+  // Use default provided by user
+  fbConfigStr = JSON.stringify({
+    apiKey: "AIzaSyBBEJleoC42NKahdCcApQGrmx385JU5PPs",
+    authDomain: "orderautomation-a1c02.firebaseapp.com",
+    projectId: "orderautomation-a1c02",
+    storageBucket: "orderautomation-a1c02.firebasestorage.app",
+    messagingSenderId: "990225381229",
+    appId: "1:990225381229:web:3d68ae83eccdc827d54c64",
+    measurementId: "G-SHC24WS44T"
+  });
+  localStorage.setItem('firebase_config', fbConfigStr);
+}
+
+try {
+  const firebaseConfig = JSON.parse(fbConfigStr);
+  if (typeof firebase !== 'undefined') {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
     }
-  } catch (error) {
-    console.error('Failed to initialize Firebase client:', error);
+    firebaseDb = firebase.firestore();
+    firebaseAuth = firebase.auth();
+    isFirebaseConnected = true;
+    console.log('Connected to Firebase Firestore & Auth successfully.');
+    
+    // Auth Listener
+    firebaseAuth.onAuthStateChanged(handleAuthStateChange);
   }
+} catch (error) {
+  console.error('Failed to initialize Firebase client:', error);
 }
 
 // --- Database Operations Adapter ---
@@ -669,13 +687,17 @@ function renderOrders() {
       card.className = `vendor-order-card ${order ? 'has-order' : 'no-order'}`;
       card.style.cursor = 'pointer';
       
-      card.addEventListener('click', () => {
-        if (order) {
-          openEditOrderModal(order.id);
-        } else {
-          openNewOrderForVendor(vendor.id);
-        }
-      });
+      if (currentUserRole !== 'viewer') {
+        card.addEventListener('click', () => {
+          if (order) {
+            openEditOrderModal(order.id);
+          } else {
+            openNewOrderForVendor(vendor.id);
+          }
+        });
+      } else {
+        card.style.cursor = 'default';
+      }
 
       let statusBadge = '<span class="badge badge-no-order">לא הוזמן</span>';
       let itemsPreview = 'אין הזמנה לתאריך זה. לחץ כאן ליצירה...';
@@ -709,12 +731,14 @@ function renderOrders() {
           `;
         }
 
-        actionButtons = `
-          ${dispatchBtnHTML}
-          <button class="btn btn-secondary btn-sm text-danger" style="color: var(--color-danger); border-color: rgba(239,68,68,0.15);" onclick="event.stopPropagation(); deleteOrder('${order.id}')">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        `;
+        if (currentUserRole !== 'viewer') {
+          actionButtons = `
+            ${dispatchBtnHTML}
+            <button class="btn btn-secondary btn-sm text-danger" style="color: var(--color-danger); border-color: rgba(239,68,68,0.15);" onclick="event.stopPropagation(); deleteOrder('${order.id}')">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          `;
+        }
       }
 
       card.innerHTML = `
@@ -843,18 +867,36 @@ function renderVendors() {
 // --- Event Listeners ---
 function setupEventListeners() {
   // Navigation
+  const btnSystemAdmin = document.getElementById('btn-system-admin');
+  const viewSystemAdmin = document.getElementById('view-system-admin');
+
   btnDashboard.addEventListener('click', () => {
     btnDashboard.classList.add('active');
     btnVendors.classList.remove('active');
+    btnSystemAdmin.classList.remove('active');
     viewDashboard.classList.add('active');
     viewVendors.classList.remove('active');
+    viewSystemAdmin.classList.remove('active');
   });
 
   btnVendors.addEventListener('click', () => {
     btnVendors.classList.add('active');
     btnDashboard.classList.remove('active');
+    btnSystemAdmin.classList.remove('active');
     viewVendors.classList.add('active');
     viewDashboard.classList.remove('active');
+    viewSystemAdmin.classList.remove('active');
+  });
+
+  btnSystemAdmin.addEventListener('click', () => {
+    if (currentUserRole !== 'admin') return;
+    btnSystemAdmin.classList.add('active');
+    btnDashboard.classList.remove('active');
+    btnVendors.classList.remove('active');
+    viewSystemAdmin.classList.add('active');
+    viewDashboard.classList.remove('active');
+    viewVendors.classList.remove('active');
+    loadAdminUsers();
   });
 
   // Date picker change
@@ -1498,3 +1540,183 @@ window.deleteOrder = deleteOrder;
 window.prepareDispatch = prepareDispatch;
 window.openEditVendorModal = openEditVendorModal;
 window.deleteVendor = deleteVendor;
+
+// --- Admin Area Functions ---
+async function loadAdminUsers() {
+  const tbody = document.getElementById('admin-users-tbody');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">טוען משתמשים...</td></tr>';
+  
+  if (!isFirebaseConnected || !firebaseDb) return;
+  
+  try {
+    const snapshot = await firebaseDb.collection('users').get();
+    tbody.innerHTML = '';
+    
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid var(--border-color)';
+      
+      const roleText = data.role === 'admin' ? 'מנהל מערכת' : (data.role === 'editor' ? 'עורך הזמנות' : 'צופה בלבד');
+      const dateText = data.createdAt ? new Date(data.createdAt).toLocaleDateString('he-IL') : 'לא ידוע';
+      
+      let actionsHTML = '';
+      if (doc.id !== firebaseAuth.currentUser.uid) {
+        actionsHTML = `
+          <select class="form-control" style="width: auto; display: inline-block; padding: 4px;" onchange="changeUserRole('${doc.id}', this.value)">
+            <option value="viewer" ${data.role === 'viewer' ? 'selected' : ''}>צופה</option>
+            <option value="editor" ${data.role === 'editor' ? 'selected' : ''}>עורך</option>
+            <option value="admin"  ${data.role === 'admin' ? 'selected' : ''}>מנהל</option>
+          </select>
+        `;
+      } else {
+        actionsHTML = '<span style="color: var(--text-secondary); font-size:0.8rem;">(אתה)</span>';
+      }
+      
+      tr.innerHTML = `
+        <td style="padding: 10px;">${data.email}</td>
+        <td style="padding: 10px;">${dateText}</td>
+        <td style="padding: 10px;">${roleText}</td>
+        <td style="padding: 10px;">${actionsHTML}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch(err) {
+    console.error(err);
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">שגיאה בטעינת משתמשים</td></tr>';
+  }
+}
+
+window.changeUserRole = async function(uid, newRole) {
+  if (currentUserRole !== 'admin') return;
+  if (!confirm('האם אתה בטוח שברצונך לשנות הרשאות למשתמש זה?')) return;
+  
+  try {
+    await firebaseDb.collection('users').doc(uid).update({ role: newRole });
+    alert('ההרשאות עודכנו בהצלחה!');
+    loadAdminUsers();
+  } catch (err) {
+    alert('שגיאה בעדכון ההרשאות: ' + err.message);
+  }
+};
+
+// --- Auth & Roles Logic ---
+const modalLogin = document.getElementById('modal-login');
+const loginForm = document.getElementById('login-form');
+const loginEmail = document.getElementById('login-email');
+const loginPassword = document.getElementById('login-password');
+const btnToggleSignup = document.getElementById('btn-toggle-signup');
+const userProfileBadge = document.getElementById('user-profile-badge');
+const userEmailDisplay = document.getElementById('user-email-display');
+const userRoleDisplay = document.getElementById('user-role-display');
+const btnLogout = document.getElementById('btn-logout');
+
+let isSignupMode = false;
+
+if (btnToggleSignup) {
+  btnToggleSignup.addEventListener('click', (e) => {
+    e.preventDefault();
+    isSignupMode = !isSignupMode;
+    if (isSignupMode) {
+      document.querySelector('#modal-login h2').textContent = 'יצירת משתמש חדש';
+      document.querySelector('#modal-login button[type="submit"]').textContent = 'הירשם';
+      btnToggleSignup.textContent = 'יש לך כבר חשבון? התחבר';
+    } else {
+      document.querySelector('#modal-login h2').textContent = 'התחברות למערכת';
+      document.querySelector('#modal-login button[type="submit"]').textContent = 'התחבר';
+      btnToggleSignup.textContent = 'צור חשבון';
+    }
+  });
+}
+
+if (loginForm) {
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = loginEmail.value.trim();
+    const password = loginPassword.value.trim();
+    if (!email || !password) return;
+    
+    try {
+      if (isSignupMode) {
+        await firebaseAuth.createUserWithEmailAndPassword(email, password);
+      } else {
+        await firebaseAuth.signInWithEmailAndPassword(email, password);
+      }
+    } catch (err) {
+      alert('שגיאה: ' + err.message);
+    }
+  });
+}
+
+if (btnLogout) {
+  btnLogout.addEventListener('click', async () => {
+    if (firebaseAuth) {
+      await firebaseAuth.signOut();
+    }
+  });
+}
+
+async function handleAuthStateChange(user) {
+  if (user) {
+    // User is logged in
+    if (modalLogin) modalLogin.classList.remove('active');
+    if (userProfileBadge) userProfileBadge.style.display = 'flex';
+    if (userEmailDisplay) userEmailDisplay.textContent = user.email;
+    
+    // Check role in Firestore
+    if (firebaseDb) {
+      try {
+        const userDoc = await firebaseDb.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+          currentUserRole = userDoc.data().role || 'viewer';
+        } else {
+          // New user, create as viewer
+          currentUserRole = 'viewer';
+          await firebaseDb.collection('users').doc(user.uid).set({
+            email: user.email,
+            role: 'viewer',
+            createdAt: new Date().toISOString()
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching user role:", err);
+        currentUserRole = 'viewer'; // fallback
+      }
+    }
+    
+    let roleHebrew = 'צופה בלבד';
+    if (currentUserRole === 'admin') roleHebrew = 'מנהל מערכת';
+    if (currentUserRole === 'editor') roleHebrew = 'עורך הזמנות';
+    
+    if (userRoleDisplay) userRoleDisplay.textContent = 'תפקיד: ' + roleHebrew;
+    
+    applyRoleBasedUI(currentUserRole);
+    refreshAllData(); // reload data now that we know the role
+  } else {
+    // User is logged out
+    if (modalLogin) modalLogin.classList.add('active');
+    if (userProfileBadge) userProfileBadge.style.display = 'none';
+    currentUserRole = 'viewer';
+  }
+}
+
+function applyRoleBasedUI(role) {
+  const btnVendors = document.getElementById('btn-vendors');
+  const btnSystemAdmin = document.getElementById('btn-system-admin');
+  
+  if (role === 'admin') {
+    if (btnVendors) btnVendors.style.display = 'block';
+    if (btnSystemAdmin) btnSystemAdmin.style.display = 'block';
+  } else if (role === 'editor') {
+    if (btnVendors) btnVendors.style.display = 'none';
+    if (btnSystemAdmin) btnSystemAdmin.style.display = 'none';
+  } else {
+    // viewer
+    if (btnVendors) btnVendors.style.display = 'none';
+    if (btnSystemAdmin) btnSystemAdmin.style.display = 'none';
+  }
+  
+  // Re-render dashboard if already loaded
+  renderVendors();
+  renderOrders();
+}

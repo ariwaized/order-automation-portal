@@ -14,6 +14,7 @@
   <!-- Firebase SDKs (Compat version for simplicity) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -34,6 +35,9 @@
         </button>
         <button class="nav-btn" id="btn-vendors">
           <i class="fa-solid fa-truck-field"></i> ניהול ספקים
+        </button>
+        <button class="nav-btn" id="btn-system-admin" style="display: none;">
+          <i class="fa-solid fa-user-shield"></i> ניהול מערכת
         </button>
       </nav>
       <div class="sidebar-footer">
@@ -135,6 +139,37 @@
               <div class="vendors-grid" id="vendors-grid-container">
                 <!-- Vendors loaded dynamically -->
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- System Admin View -->
+      <section id="view-system-admin" class="view-section">
+        <div class="view-header">
+          <h1><i class="fa-solid fa-user-shield"></i> ניהול מערכת</h1>
+          <p>ניהול משתמשים והרשאות, גישה לאזור ספקים מסווג.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fa-solid fa-users"></i> משתמשי המערכת</h2>
+          </div>
+          <div class="card-body">
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; text-align: right; border-collapse: collapse;">
+                <thead>
+                  <tr style="border-bottom: 2px solid var(--border-color);">
+                    <th style="padding: 10px;">כתובת אימייל</th>
+                    <th style="padding: 10px;">תאריך הצטרפות</th>
+                    <th style="padding: 10px;">תפקיד נוכחי</th>
+                    <th style="padding: 10px;">פעולות</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-users-tbody">
+                  <!-- Users loaded dynamically -->
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -376,6 +411,46 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Login Overlay -->
+  <div class="modal-overlay active" id="modal-login" style="z-index: 10000; background: var(--bg-body);">
+    <div class="modal-content" style="max-width: 400px; padding: 40px;">
+      <div class="logo" style="justify-content: center; margin-bottom: 20px; font-size: 2rem;">
+        <i class="fa-solid fa-shield-halved logo-icon"></i>
+        <span>OrderSafe</span>
+      </div>
+      <h2 style="text-align: center; margin-bottom: 30px;">התחברות למערכת</h2>
+      
+      <form id="login-form">
+        <div class="form-group">
+          <label>כתובת אימייל</label>
+          <input type="email" id="login-email" class="form-control" required placeholder="name@company.com">
+        </div>
+        <div class="form-group">
+          <label>סיסמה</label>
+          <input type="password" id="login-password" class="form-control" required placeholder="הזן סיסמה">
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; height: 48px; font-size: 1.1rem; margin-top: 10px;">
+          התחבר
+        </button>
+      </form>
+      
+      <div style="text-align: center; margin-top: 20px; font-size: 0.9rem; color: var(--text-secondary);">
+        <span>אין לך משתמש? </span>
+        <a href="#" id="btn-toggle-signup" style="color: var(--color-primary); text-decoration: none;">צור חשבון</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Info (Top Right) -->
+  <div id="user-profile-badge" style="position: absolute; top: 20px; left: 20px; display: none; align-items: center; gap: 10px; background: var(--bg-card); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); z-index: 1000;">
+    <div style="display: flex; flex-direction: column; text-align: left;">
+      <span id="user-email-display" style="font-size: 0.9rem; font-weight: 500;"></span>
+      <span id="user-role-display" style="font-size: 0.75rem; color: var(--text-secondary);"></span>
+    </div>
+    <button id="btn-logout" class="btn btn-secondary btn-sm" style="padding: 4px 8px;"><i class="fa-solid fa-right-from-bracket"></i></button>
   </div>
 
   <script src="js/app.js"></script>
