@@ -1598,7 +1598,7 @@ async function loadAdminUsers() {
     });
   } catch(err) {
     console.error(err);
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">שגיאה בטעינת משתמשים</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--color-danger);">שגיאה בטעינת משתמשים: ${err.message || err}</td></tr>`;
   }
 }
 
