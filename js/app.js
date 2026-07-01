@@ -291,18 +291,22 @@ const dbOps = {
   getOrders: async (date) => {
     if (isFirebaseConnected && firebaseDb) {
       try {
+        const snapshotAll = await firebaseDb.collection('orders').get();
+        if (snapshotAll.empty) {
+          // Sync seed orders to Firebase
+          const local = getLocalDB();
+          for (const o of local.orders) {
+            const copy = { ...o };
+            delete copy.id;
+            await firebaseDb.collection('orders').doc(o.id).set(copy);
+          }
+        }
+        
         let query = firebaseDb.collection('orders');
         if (date) {
           query = query.where('date', '==', date);
         }
         const snapshot = await query.get();
-        if (snapshot.empty) {
-          const local = getLocalDB();
-          if (date) {
-            return local.orders.filter(o => o.date === date);
-          }
-          return local.orders;
-        }
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       } catch (err) {
         console.error("Firebase getOrders error, falling back to local:", err);
