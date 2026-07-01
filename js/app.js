@@ -563,8 +563,10 @@ const vendorsGridContainer = document.getElementById('vendors-grid-container');
 
 // Navigation Buttons
 const btnDashboard = document.getElementById('btn-dashboard');
+const btnOrders = document.getElementById('btn-orders');
 const btnVendors = document.getElementById('btn-vendors');
 const viewDashboard = document.getElementById('view-dashboard');
+const viewOrders = document.getElementById('view-orders');
 const viewVendors = document.getElementById('view-vendors');
 
 // Modal Elements
@@ -683,9 +685,88 @@ async function refreshAllData() {
     renderVendors();
     renderOrders();
     renderActivityLogs();
+    renderDashboardStats();
+    renderDailySummaryTable();
   } catch (err) {
     console.error('Error refreshing data:', err);
   }
+}
+
+// --- Dashboard Stats & Daily Summary Table ---
+function renderDashboardStats() {
+  const totalVendors = vendors.length;
+  
+  // Completed orders today
+  const completedOrders = orders.filter(o => o.status === 'completed' || o.status === 'correction_sent').length;
+  
+  // Pending orders today
+  const pendingOrders = orders.filter(o => o.status === 'pending_approval').length;
+  
+  // Total items quantity ordered today
+  let totalItemsCount = 0;
+  orders.forEach(order => {
+    order.items.forEach(item => {
+      totalItemsCount += (item.quantity || 0);
+    });
+  });
+  
+  const statsVendors = document.getElementById('stats-total-vendors');
+  const statsCompleted = document.getElementById('stats-completed-orders');
+  const statsPending = document.getElementById('stats-pending-orders');
+  const statsItems = document.getElementById('stats-total-items');
+  
+  if (statsVendors) statsVendors.textContent = totalVendors;
+  if (statsCompleted) statsCompleted.textContent = completedOrders;
+  if (statsPending) statsPending.textContent = pendingOrders;
+  if (statsItems) statsItems.textContent = totalItemsCount;
+}
+
+function renderDailySummaryTable() {
+  const tbody = document.getElementById('daily-summary-tbody');
+  if (!tbody) return;
+  
+  tbody.innerHTML = '';
+  
+  if (vendors.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px;">אין ספקים מוגדרים במערכת.</td></tr>';
+    return;
+  }
+  
+  vendors.forEach(vendor => {
+    const order = orders.find(o => o.vendorId === vendor.id);
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid var(--border-color)';
+    
+    let statusBadgeHTML = '<span class="badge badge-no-order">לא הוזמן</span>';
+    let totalItems = 0;
+    let itemsPreview = '---';
+    
+    if (order) {
+      const badgeClass = `badge-${order.status}`;
+      let badgeText = '';
+      switch (order.status) {
+        case 'draft': badgeText = 'טיוטה'; break;
+        case 'pending_approval': badgeText = 'ממתין לאישור'; break;
+        case 'completed': badgeText = 'בוצע בהצלחה'; break;
+        case 'correction_sent': badgeText = 'נשלח תיקון'; break;
+      }
+      statusBadgeHTML = `<span class="badge ${badgeClass}"><span class="status-dot"></span> ${badgeText}</span>`;
+      
+      // Calculate total items
+      order.items.forEach(i => { totalItems += (i.quantity || 0); });
+      
+      // Items preview
+      itemsPreview = order.items.map(i => `${i.name}: ${i.quantity} ${i.unit || ''}`).join(', ');
+    }
+    
+    tr.innerHTML = `
+      <td style="padding: 12px 10px; font-weight: 500; color: #fff;">${vendor.name}</td>
+      <td style="padding: 12px 10px;">${statusBadgeHTML}</td>
+      <td style="padding: 12px 10px; color: var(--text-secondary);">${totalItems || '---'}</td>
+      <td style="padding: 12px 10px; color: var(--text-secondary); max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${itemsPreview}">${itemsPreview}</td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
 // UI Rendering
@@ -912,9 +993,22 @@ function setupEventListeners() {
 
   btnDashboard.addEventListener('click', () => {
     btnDashboard.classList.add('active');
+    btnOrders.classList.remove('active');
     btnVendors.classList.remove('active');
     btnSystemAdmin.classList.remove('active');
     viewDashboard.classList.add('active');
+    viewOrders.classList.remove('active');
+    viewVendors.classList.remove('active');
+    viewSystemAdmin.classList.remove('active');
+  });
+
+  btnOrders.addEventListener('click', () => {
+    btnOrders.classList.add('active');
+    btnDashboard.classList.remove('active');
+    btnVendors.classList.remove('active');
+    btnSystemAdmin.classList.remove('active');
+    viewOrders.classList.add('active');
+    viewDashboard.classList.remove('active');
     viewVendors.classList.remove('active');
     viewSystemAdmin.classList.remove('active');
   });
@@ -922,9 +1016,11 @@ function setupEventListeners() {
   btnVendors.addEventListener('click', () => {
     btnVendors.classList.add('active');
     btnDashboard.classList.remove('active');
+    btnOrders.classList.remove('active');
     btnSystemAdmin.classList.remove('active');
     viewVendors.classList.add('active');
     viewDashboard.classList.remove('active');
+    viewOrders.classList.remove('active');
     viewSystemAdmin.classList.remove('active');
   });
 
@@ -932,9 +1028,11 @@ function setupEventListeners() {
     if (currentUserRole !== 'admin') return;
     btnSystemAdmin.classList.add('active');
     btnDashboard.classList.remove('active');
+    btnOrders.classList.remove('active');
     btnVendors.classList.remove('active');
     viewSystemAdmin.classList.add('active');
     viewDashboard.classList.remove('active');
+    viewOrders.classList.remove('active');
     viewVendors.classList.remove('active');
     loadAdminUsers();
   });
