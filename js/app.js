@@ -296,10 +296,12 @@ const dbOps = {
           query = query.where('date', '==', date);
         }
         const snapshot = await query.get();
-        if (snapshot.empty && date) {
-          // Check local DB fallback or return empty
+        if (snapshot.empty) {
           const local = getLocalDB();
-          return local.orders.filter(o => o.date === date);
+          if (date) {
+            return local.orders.filter(o => o.date === date);
+          }
+          return local.orders;
         }
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       } catch (err) {
