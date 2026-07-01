@@ -397,7 +397,7 @@ function computeItemsDiff(oldItems, newItems) {
 async function prepareActionPayload(orderId) {
   const ordersList = await dbOps.getOrders();
   const order = ordersList.find(o => o.id === orderId);
-  if (!order) throw new Error('ההזמנה לא נמצאה');
+  if (!order) throw new Error('ההזמנה לא נמצאה: ' + orderId + ', הזמנות זמינות במערכת: ' + ordersList.map(o => o.id + ' (' + o.vendorName + ')').join(', '));
 
   const vendorsList = await dbOps.getVendors();
   const vendor = vendorsList.find(v => v.id === order.vendorId);
