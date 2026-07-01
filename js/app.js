@@ -171,8 +171,23 @@ let isFirebaseConnected = false;
 let currentUserRole = 'viewer'; // default fallback
 
 let fbConfigStr = localStorage.getItem('firebase_config');
+const targetProjectId = "orderautomation-a1c02";
+let needOverwrite = false;
+
 if (!fbConfigStr) {
-  // Use default provided by user
+  needOverwrite = true;
+} else {
+  try {
+    const parsed = JSON.parse(fbConfigStr);
+    if (!parsed || parsed.projectId !== targetProjectId) {
+      needOverwrite = true;
+    }
+  } catch (e) {
+    needOverwrite = true;
+  }
+}
+
+if (needOverwrite) {
   fbConfigStr = JSON.stringify({
     apiKey: "AIzaSyBBEJleoC42NKahdCcApQGrmx385JU5PPs",
     authDomain: "orderautomation-a1c02.firebaseapp.com",
