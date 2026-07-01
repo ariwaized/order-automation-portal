@@ -78,7 +78,8 @@ app.post('/api/send-email', async (req, res) => {
       from: process.env.SMTP_FROM || process.env.SMTP_USER,
       to,
       subject,
-      text: body
+      text: body,
+      html: `<div dir="rtl" style="font-family: Arial, sans-serif; text-align: right; direction: rtl; white-space: pre-wrap; font-size: 15px; color: #333;">${body}</div>`
     };
 
     const info = await transporter.sendMail(mailOptions);
