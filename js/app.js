@@ -471,11 +471,29 @@ async function executeDispatchPayload(orderId) {
   let logMessage = '';
 
   if (vendor.type === 'email') {
-    logMessage = `נשלח מייל בהצלחה לכתובת ${vendor.email}`;
-    if (order.dispatchedItems) {
-      logMessage = `נשלח מייל תיקון בהצלחה לכתובת ${vendor.email}`;
+    try {
+      const emailPayload = await prepareActionPayload(orderId);
+      const response = await fetch('http://localhost:3000/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: emailPayload.emailDetails.to,
+          subject: emailPayload.emailDetails.subject,
+          body: emailPayload.emailDetails.body
+        })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'שגיאה בשליחת המייל מהשרת המקומי');
+      }
+      logMessage = `נשלח מייל בהצלחה לכתובת ${vendor.email}`;
+      if (order.dispatchedItems) {
+        logMessage = `נשלח מייל תיקון בהצלחה לכתובת ${vendor.email}`;
+      }
+      order.status = order.dispatchedItems ? 'correction_sent' : 'completed';
+    } catch (err) {
+      throw new Error('שליחת המייל נכשלה: ' + err.message);
     }
-    order.status = order.dispatchedItems ? 'correction_sent' : 'completed';
   } else if (vendor.type === 'website') {
     if (vendor.id === 'v_berman') {
       try {
