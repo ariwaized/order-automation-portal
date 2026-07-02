@@ -53,10 +53,6 @@ function printPreview(order, targetDate, credentials) {
 }
 
 async function executeRanOrder(order, credentials) {
-  if (!order.items || order.items.length === 0) {
-    throw new Error('❌ אין פריטים בהזמנה.');
-  }
-
   let targetDate = order.date; // YYYY-MM-DD
   if (targetDate && targetDate.includes('-') && targetDate.split('-')[0].length === 4) {
     const [yyyy, mm, dd] = targetDate.split('-');
@@ -116,6 +112,13 @@ async function executeRanOrder(order, credentials) {
       await page.locator(editButtonSelector).first().click();
       isEditMode = true;
     } else {
+      // אם לא נמצאה הזמנה קיימת וההזמנה ריקה - אין מה לבטל או ליצור
+      if (!order.items || order.items.length === 0) {
+        console.log(`   🆕 לא נמצאה הזמנה קיימת לתאריך ${targetDateOnly}, ומכיוון שההזמנה בפורטל ריקה, לא בוצע שינוי.`);
+        await browser.close();
+        return { success: true, message: 'לא נמצאה הזמנה קיימת לביטול וההזמנה שהוגשה ריקה.' };
+      }
+
       console.log(`   🆕 לא נמצאה הזמנה קיימת לתאריך ${targetDateOnly}. יוצר הזמנה חדשה...`);
       // חזרה לעמוד הראשי ולחיצה על הזמנה חדשה כדי לקבל את ה-ID הדינמי של המשתמש
       await page.goto('http://www.ranfp.com/index.php?dir=site&page=members&op=view');

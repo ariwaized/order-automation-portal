@@ -1379,7 +1379,7 @@ async function handleOrderSubmit(e) {
     }
   });
 
-  if (items.length === 0) {
+  if (items.length === 0 && !orderId) {
     alert('יש להזין כמות לפחות עבור מוצר אחד');
     return;
   }
