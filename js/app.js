@@ -1341,14 +1341,17 @@ async function handleOrderSubmit(e) {
   const catalogRows = document.querySelectorAll('.catalog-item-row');
   catalogRows.forEach(row => {
     const input = row.querySelector('.catalog-item-quantity');
-    const quantity = parseFloat(input.value);
-    if (quantity > 0) {
-      items.push({
-        name: input.getAttribute('data-name'),
-        quantity: quantity,
-        unit: input.getAttribute('data-unit'),
-        sku: input.getAttribute('data-sku') || undefined
-      });
+    const val = input.value.trim();
+    if (val !== '') {
+      const quantity = parseFloat(val);
+      if (!isNaN(quantity) && quantity >= 0) {
+        items.push({
+          name: input.getAttribute('data-name'),
+          quantity: quantity,
+          unit: input.getAttribute('data-unit'),
+          sku: input.getAttribute('data-sku') || undefined
+        });
+      }
     }
   });
 
@@ -1358,12 +1361,15 @@ async function handleOrderSubmit(e) {
     const nameInput = row.querySelector('.item-name');
     const name = nameInput ? nameInput.value.trim() : '';
     const quantityInput = row.querySelector('.item-quantity');
-    const quantity = quantityInput ? parseFloat(quantityInput.value) : 0;
+    const val = quantityInput ? quantityInput.value.trim() : '';
     const unitSelect = row.querySelector('.item-unit');
     const unit = unitSelect ? unitSelect.value : 'יחידות';
     
-    if (name && quantity > 0) {
-      items.push({ name, quantity, unit });
+    if (name && val !== '') {
+      const quantity = parseFloat(val);
+      if (!isNaN(quantity) && quantity >= 0) {
+        items.push({ name, quantity, unit });
+      }
     }
   });
 
