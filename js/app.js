@@ -877,7 +877,16 @@ function renderOrders() {
             </button>
           `;
         } else if (order.status === 'completed' || order.status === 'correction_sent') {
+          let verifyBtnHTML = '';
+          if (vendor.id === 'v_ran') {
+            verifyBtnHTML = `
+              <button class="btn btn-secondary btn-sm" style="color: var(--color-info); border-color: rgba(14,165,233,0.15);" onclick="event.stopPropagation(); verifyOrderOnDemand('${order.id}', this)">
+                <i class="fa-solid fa-shield-halved"></i> אימות
+              </button>
+            `;
+          }
           dispatchBtnHTML = `
+            ${verifyBtnHTML}
             <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); prepareDispatch('${order.id}')">
               <i class="fa-solid fa-rotate"></i> עדכן/תקן
             </button>
@@ -2014,5 +2023,55 @@ async function loadDeveloperZone() {
     
   } catch (err) {
     console.error('Error loading developer zone data:', err);
+  }
+}
+
+// Manually verify Ran order on demand
+async function verifyOrderOnDemand(orderId, btn) {
+  if (btn.disabled) return;
+  
+  if (!confirm('האם ברצונך להפעיל כעת בדיקת אימות אוטומטית מול אתר הספק? \n(הבוט יתחבר וישווה את כמויות הירקות בפועל).')) {
+    return;
+  }
+  
+  const originalHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> מאמת...';
+  
+  try {
+    const response = await fetch('http://localhost:3000/api/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId })
+    });
+    
+    const result = await response.json();
+    
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
+    
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || 'שגיאה בהרצת בדיקת האימות');
+    }
+    
+    if (result.isMatch) {
+      alert('✅ בדיקת האימות הצליחה! \nההזמנה באתר תואמת לחלוטין לפורטל.');
+    } else {
+      let diffText = '❌ נמצאו הפרשים מול אתר הספק:\n\n';
+      result.diffs.forEach(diff => {
+        diffText += `• ${diff}\n`;
+      });
+      diffText += '\nנשלח מייל התראה מפורט למנהל.';
+      alert(diffText);
+    }
+    
+    // Reload logs
+    loadDeveloperZone();
+    
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
+    console.error('Verification failed:', err);
+    alert('שגיאה במהלך בדיקת האימות: ' + err.message);
   }
 }
