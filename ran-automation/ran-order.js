@@ -85,24 +85,82 @@ async function executeRanOrder(order, credentials) {
     await page.waitForURL('**/index.php?dir=site&page=members&op=view*');
     console.log('   ✅ כניסה הצליחה');
 
-    // שלב 2: מעבר לדף ההזמנה
-    console.log('📅 שלב 2/5 — מעבר לדף ההזמנה והגדרת תאריך...');
-    await page.getByRole('link', { name: 'הזמנה חדשה ירקות' }).click();
+    // שלב 2: בדיקה אם קיימת כבר הזמנה לתאריך זה ב"ההזמנות שלי"
+    console.log('📅 שלב 2/5 — בודק אם קיימת הזמנה לתאריך זה ב"ההזמנות שלי"...');
+    await page.goto('http://www.ranfp.com/index.php?dir=site&page=members&op=orders');
+    await page.waitForTimeout(3000);
+
+    // תאריך המטרה בפורמט YYYY-MM-DD
+    const targetDateOnly = order.date; // YYYY-MM-DD
+    
+    // חיפוש קישור עריכה עבור השורה המכילה את התאריך המבוקש
+    const editButtonSelector = await page.evaluate((targetDate) => {
+      const rows = Array.from(document.querySelectorAll('table tbody tr'));
+      for (const row of rows) {
+        const cells = Array.from(row.querySelectorAll('td'));
+        // בדיקה אם אחת העמודות (dater) מתחילה בתאריך המבוקש YYYY-MM-DD
+        const hasDate = cells.some(td => td.classList.contains('dater') && td.innerText.trim().startsWith(targetDate));
+        if (hasDate) {
+          const editBtn = row.querySelector('a[href*="edit="]');
+          if (editBtn) {
+            return `a[href*="${editBtn.getAttribute('href')}"]`;
+          }
+        }
+      }
+      return null;
+    }, targetDateOnly);
+
+    let isEditMode = false;
+    if (editButtonSelector) {
+      console.log(`   📝 נמצאה הזמנה קיימת לתאריך ${targetDateOnly}. נכנס למצב עריכה...`);
+      await page.locator(editButtonSelector).first().click();
+      isEditMode = true;
+    } else {
+      console.log(`   🆕 לא נמצאה הזמנה קיימת לתאריך ${targetDateOnly}. יוצר הזמנה חדשה...`);
+      // חזרה לעמוד הראשי ולחיצה על הזמנה חדשה כדי לקבל את ה-ID הדינמי של המשתמש
+      await page.goto('http://www.ranfp.com/index.php?dir=site&page=members&op=view');
+      await page.waitForTimeout(2000);
+      await page.getByRole('link', { name: 'הזמנה חדשה ירקות' }).click();
+    }
     await page.waitForTimeout(4000);
 
-    // הגדרת תאריך
-    await page.evaluate((dateStr) => {
-      const el = document.getElementById('date');
-      if (el) {
-        el.value = dateStr;
-        el.dispatchEvent(new Event('change', { bubbles: true }));
-        el.dispatchEvent(new Event('blur', { bubbles: true }));
-      }
-    }, targetDate);
-    console.log(`   ✅ תאריך הוגדר: ${targetDate}`);
+    // הגדרת תאריך (רק אם מדובר בהזמנה חדשה. בעריכה התאריך כבר נעול)
+    if (!isEditMode) {
+      await page.evaluate((dateStr) => {
+        const el = document.getElementById('date');
+        if (el) {
+          el.value = dateStr;
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+          el.dispatchEvent(new Event('blur', { bubbles: true }));
+        }
+      }, targetDate);
+      console.log(`   ✅ תאריך הוגדר: ${targetDate}`);
+    }
 
     // שלב 3: הוספת כמויות מוצרים
     console.log('🛒 שלב 3/5 — מזין כמויות עבור מוצרים...');
+    
+    if (isEditMode) {
+      // אם אנחנו בעריכה: מאפסים קודם את כל המוצרים שכבר מוזנים באתר
+      // ושאינם חלק מההזמנה המעודכנת שלנו
+      console.log('   🔄 מאפס פריטים ישנים שאינם בהזמנה הנוכחית...');
+      await page.evaluate((itemsToKeep) => {
+        const inputs = document.querySelectorAll('input[name^="prodact["]');
+        inputs.forEach(input => {
+          const nameAttr = input.getAttribute('name');
+          const match = nameAttr.match(/\[(\d+)\]/);
+          if (!match) return;
+          const sku = match[1];
+          
+          if (!itemsToKeep.includes(sku)) {
+            input.value = '0';
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        });
+      }, order.items.map(item => String(item.sku)));
+      await page.waitForTimeout(1000);
+    }
+
     for (const item of order.items) {
       if (!item.sku) {
         console.warn(`   ⚠️ מוצר [${item.name}] חסר מק"ט (SKU) - מדלג.`);
