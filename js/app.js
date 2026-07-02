@@ -1344,13 +1344,16 @@ async function handleOrderSubmit(e) {
     const val = input.value.trim();
     if (val !== '') {
       const quantity = parseFloat(val);
-      if (!isNaN(quantity) && quantity >= 0) {
-        items.push({
-          name: input.getAttribute('data-name'),
-          quantity: quantity,
-          unit: input.getAttribute('data-unit'),
-          sku: input.getAttribute('data-sku') || undefined
-        });
+      if (!isNaN(quantity)) {
+        const isValidQty = orderId ? (quantity >= 0) : (quantity > 0);
+        if (isValidQty) {
+          items.push({
+            name: input.getAttribute('data-name'),
+            quantity: quantity,
+            unit: input.getAttribute('data-unit'),
+            sku: input.getAttribute('data-sku') || undefined
+          });
+        }
       }
     }
   });
@@ -1367,8 +1370,11 @@ async function handleOrderSubmit(e) {
     
     if (name && val !== '') {
       const quantity = parseFloat(val);
-      if (!isNaN(quantity) && quantity >= 0) {
-        items.push({ name, quantity, unit });
+      if (!isNaN(quantity)) {
+        const isValidQty = orderId ? (quantity >= 0) : (quantity > 0);
+        if (isValidQty) {
+          items.push({ name, quantity, unit });
+        }
       }
     }
   });
