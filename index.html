@@ -42,6 +42,9 @@
         <button class="nav-btn" id="btn-system-admin" style="display: none;">
           <i class="fa-solid fa-user-shield"></i> ניהול מערכת
         </button>
+        <button class="nav-btn" id="btn-developer" style="display: none;">
+          <i class="fa-solid fa-code"></i> אזור פיתוח
+        </button>
       </nav>
       <div class="sidebar-footer">
         <div class="db-status-badge" id="db-status">
@@ -241,6 +244,46 @@
                   <!-- Users loaded dynamically -->
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Developer View -->
+      <section id="view-developer" class="view-section">
+        <div class="welcome-banner">
+          <h1><i class="fa-solid fa-code"></i> אזור פיתוח ומעקב טכני</h1>
+          <p>ניהול צילומי מסך מהאוטומציה, ויומן לוגים מפורט של המערכת.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <!-- Left Column: Screenshots Gallery -->
+          <div class="card">
+            <div class="card-header">
+              <h2><i class="fa-regular fa-image"></i> צילומי מסך של הזמנות (מקומי)</h2>
+            </div>
+            <div class="card-body" style="padding: 20px;">
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 15px;">
+                כאן נשמרים צילומי המסך המקוריים שבוצעו בסיום תהליך האוטומציה במחשב שלך.
+              </p>
+              <ul id="developer-screenshots-container" style="list-style: none; padding: 0;">
+                <!-- Screenshots list loaded dynamically -->
+              </ul>
+            </div>
+          </div>
+
+          <!-- Right Column: System Logs Feed -->
+          <div class="card">
+            <div class="card-header">
+              <h2><i class="fa-solid fa-terminal"></i> יומן לוגים מורחב</h2>
+            </div>
+            <div class="card-body" style="padding: 20px;">
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 15px;">
+                יומן היסטורי מפורט של כל פעולות השיגור והעדכון שבוצעו במערכת.
+              </p>
+              <ul id="developer-logs-container" style="list-style: none; padding: 0; max-height: 400px; overflow-y: auto;">
+                <!-- Action logs loaded dynamically -->
+              </ul>
             </div>
           </div>
         </div>

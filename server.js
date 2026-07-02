@@ -91,6 +91,35 @@ app.post('/api/send-email', async (req, res) => {
   }
 });
 
+// Get list of screenshots
+app.get('/api/screenshots', (req, res) => {
+  const fs = require('fs');
+  const screenshotsDir = path.join(__dirname, 'screenshots');
+  if (!fs.existsSync(screenshotsDir)) {
+    return res.json([]);
+  }
+  fs.readdir(screenshotsDir, (err, files) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to read screenshots directory' });
+    }
+    try {
+      const imagesWithStats = files
+        .filter(file => /\.(png|jpe?g|gif)$/i.test(file))
+        .map(file => {
+          const filePath = path.join(screenshotsDir, file);
+          const stat = fs.statSync(filePath);
+          return { name: file, mtime: stat.mtimeMs };
+        });
+      
+      imagesWithStats.sort((a, b) => b.mtime - a.mtime);
+      res.json(imagesWithStats.map(img => img.name));
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ error: 'Failed to read screenshots file stats' });
+    }
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`\n=================================================`);
   console.log(`🚀 Portal Server is running at http://localhost:${PORT}`);

@@ -565,9 +565,11 @@ const vendorsGridContainer = document.getElementById('vendors-grid-container');
 const btnDashboard = document.getElementById('btn-dashboard');
 const btnOrders = document.getElementById('btn-orders');
 const btnVendors = document.getElementById('btn-vendors');
+const btnDeveloper = document.getElementById('btn-developer');
 const viewDashboard = document.getElementById('view-dashboard');
 const viewOrders = document.getElementById('view-orders');
 const viewVendors = document.getElementById('view-vendors');
+const viewDeveloper = document.getElementById('view-developer');
 
 // Modal Elements
 const modalOrder = document.getElementById('modal-order');
@@ -757,15 +759,6 @@ function renderDailySummaryTable() {
       
       // Items preview
       itemsPreview = order.items.map(i => `${i.name}: ${i.quantity} ${i.unit || ''}`).join(', ');
-      
-      if (vendor.id === 'v_berman' && (order.status === 'completed' || order.status === 'correction_sent')) {
-        statusBadgeHTML += `
-          <br/>
-          <a href="http://localhost:3000/screenshots/last_berman_confirmation.png" target="_blank" style="color: var(--color-info); font-size: 0.85rem; text-decoration: underline; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;" onclick="event.stopPropagation();">
-            <i class="fa-regular fa-image"></i> צילום מסך אישור
-          </a>
-        `;
-      }
     }
     
     tr.innerHTML = `
@@ -854,16 +847,7 @@ function renderOrders() {
             </button>
           `;
         } else if (order.status === 'completed' || order.status === 'correction_sent') {
-          let screenshotBtnHTML = '';
-          if (vendor.id === 'v_berman') {
-            screenshotBtnHTML = `
-              <a href="http://localhost:3000/screenshots/last_berman_confirmation.png" target="_blank" class="btn btn-secondary btn-sm" style="color: var(--color-info); border-color: rgba(14,165,233,0.15); margin-left: 5px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" onclick="event.stopPropagation();">
-                <i class="fa-regular fa-image"></i> צילום מסך
-              </a>
-            `;
-          }
           dispatchBtnHTML = `
-            ${screenshotBtnHTML}
             <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); prepareDispatch('${order.id}')">
               <i class="fa-solid fa-rotate"></i> עדכן/תקן
             </button>
@@ -1014,10 +998,12 @@ function setupEventListeners() {
     btnOrders.classList.remove('active');
     btnVendors.classList.remove('active');
     btnSystemAdmin.classList.remove('active');
+    btnDeveloper.classList.remove('active');
     viewDashboard.classList.add('active');
     viewOrders.classList.remove('active');
     viewVendors.classList.remove('active');
     viewSystemAdmin.classList.remove('active');
+    viewDeveloper.classList.remove('active');
   });
 
   btnOrders.addEventListener('click', () => {
@@ -1025,10 +1011,12 @@ function setupEventListeners() {
     btnDashboard.classList.remove('active');
     btnVendors.classList.remove('active');
     btnSystemAdmin.classList.remove('active');
+    btnDeveloper.classList.remove('active');
     viewOrders.classList.add('active');
     viewDashboard.classList.remove('active');
     viewVendors.classList.remove('active');
     viewSystemAdmin.classList.remove('active');
+    viewDeveloper.classList.remove('active');
   });
 
   btnVendors.addEventListener('click', () => {
@@ -1036,10 +1024,12 @@ function setupEventListeners() {
     btnDashboard.classList.remove('active');
     btnOrders.classList.remove('active');
     btnSystemAdmin.classList.remove('active');
+    btnDeveloper.classList.remove('active');
     viewVendors.classList.add('active');
     viewDashboard.classList.remove('active');
     viewOrders.classList.remove('active');
     viewSystemAdmin.classList.remove('active');
+    viewDeveloper.classList.remove('active');
   });
 
   btnSystemAdmin.addEventListener('click', () => {
@@ -1048,11 +1038,28 @@ function setupEventListeners() {
     btnDashboard.classList.remove('active');
     btnOrders.classList.remove('active');
     btnVendors.classList.remove('active');
+    btnDeveloper.classList.remove('active');
     viewSystemAdmin.classList.add('active');
     viewDashboard.classList.remove('active');
     viewOrders.classList.remove('active');
     viewVendors.classList.remove('active');
+    viewDeveloper.classList.remove('active');
     loadAdminUsers();
+  });
+
+  btnDeveloper.addEventListener('click', () => {
+    if (currentUserRole !== 'admin') return;
+    btnDeveloper.classList.add('active');
+    btnDashboard.classList.remove('active');
+    btnOrders.classList.remove('active');
+    btnVendors.classList.remove('active');
+    btnSystemAdmin.classList.remove('active');
+    viewDeveloper.classList.add('active');
+    viewDashboard.classList.remove('active');
+    viewOrders.classList.remove('active');
+    viewVendors.classList.remove('active');
+    viewSystemAdmin.classList.remove('active');
+    loadDeveloperZone();
   });
 
   // Date picker change
@@ -1867,20 +1874,115 @@ async function handleAuthStateChange(user) {
 function applyRoleBasedUI(role) {
   const btnVendors = document.getElementById('btn-vendors');
   const btnSystemAdmin = document.getElementById('btn-system-admin');
+  const btnDeveloper = document.getElementById('btn-developer');
   
   if (role === 'admin') {
     if (btnVendors) btnVendors.style.display = 'block';
     if (btnSystemAdmin) btnSystemAdmin.style.display = 'block';
-  } else if (role === 'editor') {
-    if (btnVendors) btnVendors.style.display = 'none';
-    if (btnSystemAdmin) btnSystemAdmin.style.display = 'none';
+    if (btnDeveloper) btnDeveloper.style.display = 'block';
   } else {
-    // viewer
     if (btnVendors) btnVendors.style.display = 'none';
     if (btnSystemAdmin) btnSystemAdmin.style.display = 'none';
+    if (btnDeveloper) btnDeveloper.style.display = 'none';
   }
   
   // Re-render dashboard if already loaded
   renderVendors();
   renderOrders();
+}
+
+async function loadDeveloperZone() {
+  const screenshotsContainer = document.getElementById('developer-screenshots-container');
+  const logsContainer = document.getElementById('developer-logs-container');
+  
+  if (screenshotsContainer) screenshotsContainer.innerHTML = '<li>טוען צילומי מסך...</li>';
+  if (logsContainer) logsContainer.innerHTML = '<li>טוען יומן לוגים...</li>';
+  
+  try {
+    // 1. Fetch screenshots from server API
+    let screenshotFiles = [];
+    try {
+      const res = await fetch('http://localhost:3000/api/screenshots');
+      if (res.ok) {
+        screenshotFiles = await res.json();
+      }
+    } catch (e) {
+      console.error('Failed to fetch screenshots from local server:', e);
+    }
+    
+    if (screenshotsContainer) {
+      screenshotsContainer.innerHTML = '';
+      if (screenshotFiles.length === 0) {
+        screenshotsContainer.innerHTML = '<div style="color: var(--text-secondary); padding: 10px;">אין צילומי מסך זמינים בשרת המקומי.</div>';
+      } else {
+        screenshotFiles.forEach(file => {
+          // File name format: order_o_berman_1.png or order_o_1721234567890.png
+          const orderId = file.replace('order_', '').replace('.png', '');
+          const li = document.createElement('li');
+          li.style.display = 'flex';
+          li.style.justifyContent = 'space-between';
+          li.style.alignItems = 'center';
+          li.style.padding = '10px 0';
+          li.style.borderBottom = '1px solid var(--border-color)';
+          
+          li.innerHTML = `
+            <div>
+              <span style="color: #fff; font-weight: 500;">${file}</span>
+              <div style="font-size: 0.8rem; color: var(--text-secondary);">מזהה הזמנה: ${orderId}</div>
+            </div>
+            <a href="http://localhost:3000/screenshots/${file}" target="_blank" class="btn btn-secondary btn-sm" style="color: var(--color-info); border-color: rgba(14,165,233,0.15); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+              <i class="fa-regular fa-image"></i> צפה בתמונה
+            </a>
+          `;
+          screenshotsContainer.appendChild(li);
+        });
+      }
+    }
+    
+    // 2. Load system logs (recent actionsLog from all orders)
+    let allLogs = [];
+    const allOrders = await dbOps.getOrders();
+    allOrders.forEach(order => {
+      if (order.actionsLog) {
+        order.actionsLog.forEach(log => {
+          allLogs.push({
+            timestamp: log.timestamp,
+            action: log.action,
+            orderId: order.id,
+            vendorName: order.vendorName,
+            date: order.date
+          });
+        });
+      }
+    });
+    
+    // Sort logs descending by timestamp
+    allLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    if (logsContainer) {
+      logsContainer.innerHTML = '';
+      if (allLogs.length === 0) {
+        logsContainer.innerHTML = '<div style="color: var(--text-secondary); padding: 10px;">אין לוגים זמינים במערכת.</div>';
+      } else {
+        allLogs.forEach(log => {
+          const dateObj = new Date(log.timestamp);
+          const timeStr = dateObj.toLocaleTimeString('he-IL') + ' ' + dateObj.toLocaleDateString('he-IL');
+          const li = document.createElement('li');
+          li.style.padding = '8px 0';
+          li.style.borderBottom = '1px dashed var(--border-color)';
+          li.innerHTML = `
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary);">
+              <span>${timeStr}</span>
+              <span>הזמנת ${log.vendorName} (${log.date})</span>
+            </div>
+            <div style="color: #fff; margin-top: 4px; font-size: 0.9rem;">${log.action}</div>
+          `;
+          logsContainer.appendChild(li);
+        });
+      }
+    }
+    
+  } catch (err) {
+    console.error('Error loading developer zone data:', err);
+  }
 }

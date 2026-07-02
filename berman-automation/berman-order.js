@@ -284,7 +284,8 @@ async function executeBermanOrder(order, credentials) {
       fs.mkdirSync(screenshotsDir, { recursive: true });
     }
 
-    const screenshotPath = path.join(screenshotsDir, 'last_berman_confirmation.png');
+    const orderId = order.id || 'test';
+    const screenshotPath = path.join(screenshotsDir, `order_${orderId}.png`);
     await page.screenshot({ path: screenshotPath });
     console.log(`📸 צילום מסך של אישור ההזמנה נשמר בכתובת: ${screenshotPath}`);
 
