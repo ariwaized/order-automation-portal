@@ -246,17 +246,29 @@ const dbOps = {
     if (isFirebaseConnected && firebaseDb) {
       try {
         const snapshot = await firebaseDb.collection('vendors').get();
-        if (snapshot.empty) {
-          // Sync seed vendors to Firebase
-          const local = getLocalDB();
-          for (const v of local.vendors) {
-            const copy = { ...v };
+        const firebaseVendors = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Self-healing: Re-create any missing default vendor or update if catalog length changed
+        const local = getLocalDB();
+        let updated = false;
+        
+        for (const localV of local.vendors) {
+          const fbV = firebaseVendors.find(v => v.id === localV.id);
+          // Re-create if missing, or update if catalog size is different (meaning it's the old mock catalog!)
+          if (!fbV || (localV.id === 'v_ran' && (!fbV.catalog || fbV.catalog.length !== localV.catalog.length))) {
+            const copy = { ...localV };
             delete copy.id;
-            await firebaseDb.collection('vendors').doc(v.id).set(copy);
+            await firebaseDb.collection('vendors').doc(localV.id).set(copy);
+            updated = true;
           }
-          return local.vendors;
         }
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        if (updated) {
+          const newSnapshot = await firebaseDb.collection('vendors').get();
+          return newSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        }
+        
+        return firebaseVendors;
       } catch (err) {
         console.error("Firebase getVendors error, falling back to local:", err);
       }
