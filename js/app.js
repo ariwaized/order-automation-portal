@@ -1309,7 +1309,7 @@ function addItemRow(name = '', quantity = 1, unit = 'ק"ג') {
 
   row.innerHTML = `
     <input type="text" class="form-control item-name" placeholder="שם מוצר (עגבניות, לחמניות...)" value="${name}" required>
-    <input type="number" class="form-control item-quantity" placeholder="כמות" min="0.1" step="any" value="${quantity}" required>
+    <input type="number" class="form-control item-quantity" placeholder="כמות" min="0" step="any" value="${quantity}" required>
     <select class="form-control item-unit">
       <option value="ק\"ג" ${unit === 'ק"ג' ? 'selected' : ''}>ק"ג</option>
       <option value="יחידות" ${unit === 'יחידות' ? 'selected' : ''}>יחידות</option>
