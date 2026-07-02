@@ -249,10 +249,9 @@ const dbOps = {
         const firebaseVendors = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
         // Self-healing: Re-create any missing default vendor or update if catalog length changed
-        const local = getLocalDB();
         let updated = false;
         
-        for (const localV of local.vendors) {
+        for (const localV of DEFAULT_VENDORS) {
           const fbV = firebaseVendors.find(v => v.id === localV.id);
           // Re-create if missing, or update if catalog size is different (meaning it's the old mock catalog!)
           if (!fbV || (localV.id === 'v_ran' && (!fbV.catalog || fbV.catalog.length !== localV.catalog.length))) {
