@@ -86,9 +86,9 @@ async function executeRanOrder(order, credentials) {
     console.log('   ✅ כניסה הצליחה');
 
     // שלב 2: מעבר לדף ההזמנה
-    console.log('📅 שלב 2/5 — מעבר לדף ההזמנה הגדרת תאריך...');
-    await page.goto('http://www.ranfp.com/index.php?dir=site&page=orders&op=add&kind=1');
-    await page.waitForTimeout(3000);
+    console.log('📅 שלב 2/5 — מעבר לדף ההזמנה והגדרת תאריך...');
+    await page.getByRole('link', { name: 'הזמנה חדשה ירקות' }).click();
+    await page.waitForTimeout(4000);
 
     // הגדרת תאריך
     await page.evaluate((dateStr) => {
