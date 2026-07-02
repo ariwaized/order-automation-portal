@@ -4,8 +4,9 @@ const path = require('path');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
 
-// Import the automation script for Berman
+// Import the automation scripts
 const { executeBermanOrder } = require('./berman-automation/berman-order');
+const { executeRanOrder } = require('./ran-automation/ran-order');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,6 +35,10 @@ app.post('/api/dispatch', async (req, res) => {
     if (vendorId === 'v_berman') {
       // Execute Berman automation
       const result = await executeBermanOrder(orderData, credentials);
+      return res.status(200).json({ success: true, message: result.message });
+    } else if (vendorId === 'v_ran') {
+      // Execute Ran automation
+      const result = await executeRanOrder(orderData, credentials);
       return res.status(200).json({ success: true, message: result.message });
     } else {
       // Handle other vendors if needed in the future
