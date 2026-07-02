@@ -273,7 +273,22 @@ async function executeBermanOrder(order, credentials) {
     await sendOrderBtn.waitFor({ state: 'visible', timeout: 15000 });
     await sendOrderBtn.click();
     
-    await page.waitForTimeout(6000);
+    // המתנה להופעת הודעת ההצלחה
+    await page.waitForTimeout(4000);
+
+    // יצירת תיקיית צילומי מסך אם לא קיימת
+    const fs = require('fs');
+    const path = require('path');
+    const screenshotsDir = path.join(__dirname, '..', 'screenshots');
+    if (!fs.existsSync(screenshotsDir)) {
+      fs.mkdirSync(screenshotsDir, { recursive: true });
+    }
+
+    const screenshotPath = path.join(screenshotsDir, 'last_berman_confirmation.png');
+    await page.screenshot({ path: screenshotPath });
+    console.log(`📸 צילום מסך של אישור ההזמנה נשמר בכתובת: ${screenshotPath}`);
+
+    await page.waitForTimeout(2000);
 
     console.log('\n' + '='.repeat(52));
     console.log('✅  ההזמנה שודרה בהצלחה לברמן! 🎉');

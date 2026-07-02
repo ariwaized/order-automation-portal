@@ -757,6 +757,15 @@ function renderDailySummaryTable() {
       
       // Items preview
       itemsPreview = order.items.map(i => `${i.name}: ${i.quantity} ${i.unit || ''}`).join(', ');
+      
+      if (vendor.id === 'v_berman' && (order.status === 'completed' || order.status === 'correction_sent')) {
+        statusBadgeHTML += `
+          <br/>
+          <a href="http://localhost:3000/screenshots/last_berman_confirmation.png" target="_blank" style="color: var(--color-info); font-size: 0.85rem; text-decoration: underline; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;" onclick="event.stopPropagation();">
+            <i class="fa-regular fa-image"></i> צילום מסך אישור
+          </a>
+        `;
+      }
     }
     
     tr.innerHTML = `
@@ -845,7 +854,16 @@ function renderOrders() {
             </button>
           `;
         } else if (order.status === 'completed' || order.status === 'correction_sent') {
+          let screenshotBtnHTML = '';
+          if (vendor.id === 'v_berman') {
+            screenshotBtnHTML = `
+              <a href="http://localhost:3000/screenshots/last_berman_confirmation.png" target="_blank" class="btn btn-secondary btn-sm" style="color: var(--color-info); border-color: rgba(14,165,233,0.15); margin-left: 5px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" onclick="event.stopPropagation();">
+                <i class="fa-regular fa-image"></i> צילום מסך
+              </a>
+            `;
+          }
           dispatchBtnHTML = `
+            ${screenshotBtnHTML}
             <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); prepareDispatch('${order.id}')">
               <i class="fa-solid fa-rotate"></i> עדכן/תקן
             </button>
