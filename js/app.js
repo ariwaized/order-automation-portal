@@ -532,7 +532,7 @@ async function executeDispatchPayload(orderId) {
       throw new Error('שליחת המייל נכשלה: ' + err.message);
     }
   } else if (vendor.type === 'website') {
-    if (vendor.id === 'v_berman') {
+    if (vendor.id === 'v_berman' || vendor.id === 'v_ran') {
       try {
         const response = await fetch('http://localhost:3000/api/dispatch', {
           method: 'POST',
