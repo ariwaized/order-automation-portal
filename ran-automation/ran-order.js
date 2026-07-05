@@ -36,6 +36,56 @@ async function countdown(seconds, message) {
 }
 
 // ==============================
+// חיפוש הזמנה עם תמיכה בדפדוף (Pagination) מבוסס pos
+// ==============================
+async function locateOrderRow(page, orderDate, vendorOrderNumber) {
+  const targetDateOnly = orderDate; // YYYY-MM-DD
+  
+  for (let offset = 0; offset <= 210; offset += 70) {
+    console.log(`   🔍 מחפש את ההזמנה בעמוד עם offset pos=${offset}...`);
+    await page.goto(`http://www.ranfp.com/index.php?dir=site&page=members&op=orders&id=14&pos=${offset}`);
+    await page.waitForTimeout(2000);
+    
+    const hasTable = await page.evaluate(() => !!document.querySelector('table tbody tr'));
+    if (!hasTable) {
+      console.log('   ℹ️ העמוד ריק או שלא קיימת טבלת הזמנות, עוצר חיפוש.');
+      break;
+    }
+    
+    const editBtnSelector = await page.evaluate(({ targetDate, targetOrderNo }) => {
+      const rows = Array.from(document.querySelectorAll('table tbody tr'));
+      for (const row of rows) {
+        const cells = Array.from(row.querySelectorAll('td'));
+        if (cells.length < 5) continue;
+        
+        const orderNo = cells[4].innerText.trim();
+        const dateCell = cells[1].innerText.trim();
+        
+        if (targetOrderNo) {
+          if (orderNo === String(targetOrderNo)) {
+            const editBtn = row.querySelector('a[href*="edit="]');
+            if (editBtn) return `a[href*="${editBtn.getAttribute('href')}"]`;
+          }
+        } else {
+          if (dateCell.startsWith(targetDate)) {
+            const editBtn = row.querySelector('a[href*="edit="]');
+            if (editBtn) return `a[href*="${editBtn.getAttribute('href')}"]`;
+          }
+        }
+      }
+      return null;
+    }, { targetDate: targetDateOnly, targetOrderNo: vendorOrderNumber || null });
+    
+    if (editBtnSelector) {
+      console.log(`   ✅ נמצא כפתור עריכה להזמנה ${vendorOrderNumber || targetDateOnly} ב-offset pos=${offset}`);
+      return editBtnSelector;
+    }
+  }
+  
+  return null;
+}
+
+// ==============================
 // הדפסת תצוגה מקדימה
 // ==============================
 function printPreview(order, targetDate, credentials) {
@@ -83,28 +133,8 @@ async function executeRanOrder(order, credentials) {
 
     // שלב 2: בדיקה אם קיימת כבר הזמנה לתאריך זה ב"ההזמנות שלי"
     console.log('📅 שלב 2/5 — בודק אם קיימת הזמנה לתאריך זה ב"ההזמנות שלי"...');
-    await page.goto('http://www.ranfp.com/index.php?dir=site&page=members&op=orders');
-    await page.waitForTimeout(3000);
-
-    // תאריך המטרה בפורמט YYYY-MM-DD
     const targetDateOnly = order.date; // YYYY-MM-DD
-    
-    // חיפוש קישור עריכה עבור השורה המכילה את התאריך המבוקש
-    const editButtonSelector = await page.evaluate((targetDate) => {
-      const rows = Array.from(document.querySelectorAll('table tbody tr'));
-      for (const row of rows) {
-        const cells = Array.from(row.querySelectorAll('td'));
-        // בדיקה אם אחת העמודות (dater) מתחילה בתאריך המבוקש YYYY-MM-DD
-        const hasDate = cells.some(td => td.classList.contains('dater') && td.innerText.trim().startsWith(targetDate));
-        if (hasDate) {
-          const editBtn = row.querySelector('a[href*="edit="]');
-          if (editBtn) {
-            return `a[href*="${editBtn.getAttribute('href')}"]`;
-          }
-        }
-      }
-      return null;
-    }, targetDateOnly);
+    const editButtonSelector = await locateOrderRow(page, targetDateOnly, order.vendorOrderNumber);
 
     let isEditMode = false;
     if (editButtonSelector) {
@@ -208,12 +238,38 @@ async function executeRanOrder(order, credentials) {
     await page.screenshot({ path: screenshotPath });
     console.log(`   ✅ צילום מסך נשמר: ${screenshotPath}`);
 
+    // שליפת מספר ההזמנה שנוצר באתר של ראן
+    console.log('   🔄 שולף את מספר ההזמנה שנוצר באתר של ראן...');
+    let vendorOrderNumber = null;
+    try {
+      await page.goto('http://www.ranfp.com/index.php?dir=site&page=members&op=orders');
+      await page.waitForTimeout(3000);
+      vendorOrderNumber = await page.evaluate(() => {
+        const firstRow = document.querySelector('table tbody tr');
+        if (!firstRow) return null;
+        const cells = firstRow.querySelectorAll('td');
+        if (cells.length > 4) {
+          return cells[4].innerText.trim();
+        }
+        const editBtn = firstRow.querySelector('a[href*="edit="]');
+        if (editBtn) {
+          const href = editBtn.getAttribute('href');
+          const match = href.match(/edit=(\d+)/);
+          if (match) return match[1];
+        }
+        return null;
+      });
+      console.log(`   🎉 מספר ההזמנה שנוצר באתר של ראן: ${vendorOrderNumber}`);
+    } catch (numErr) {
+      console.warn('   ⚠️ לא הצלחנו לשלוף את מספר ההזמנה שנוצר:', numErr.message);
+    }
+
     console.log('\n' + '='.repeat(52));
     console.log('✅  ההזמנה לראן שודרה בהצלחה! 🎉');
     console.log('='.repeat(52) + '\n');
 
     await browser.close();
-    return { success: true, message: 'ההזמנה שודרה בהצלחה!' };
+    return { success: true, message: 'ההזמנה שודרה בהצלחה!', vendorOrderNumber };
 
   } catch (err) {
     console.error('\n❌ שגיאה באוטומציה:', err.message);

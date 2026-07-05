@@ -57,7 +57,19 @@ app.post('/api/dispatch', async (req, res) => {
     } else if (vendorId === 'v_ran') {
       // Execute Ran automation
       const result = await executeRanOrder(orderData, credentials);
-      return res.status(200).json({ success: true, message: result.message });
+      // Save order number to Firebase if returned
+      if (result.success && result.vendorOrderNumber) {
+        try {
+          const { doc, updateDoc } = require('firebase/firestore');
+          await updateDoc(doc(db, 'orders', orderData.id), {
+            vendorOrderNumber: result.vendorOrderNumber
+          });
+          console.log(`[Firebase] Saved vendorOrderNumber ${result.vendorOrderNumber} for order ${orderData.id}`);
+        } catch (fbErr) {
+          console.error('[Firebase] Failed to save vendorOrderNumber:', fbErr);
+        }
+      }
+      return res.status(200).json({ success: true, message: result.message, vendorOrderNumber: result.vendorOrderNumber });
     } else {
       // Handle other vendors if needed in the future
       return res.status(400).json({ error: `Automation for vendor '${vendorId}' is not implemented yet.` });

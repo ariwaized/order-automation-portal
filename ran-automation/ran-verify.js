@@ -6,6 +6,54 @@
 
 const { chromium } = require('playwright');
 
+// חיפוש הזמנה עם תמיכה בדפדוף (Pagination) מבוסס pos
+async function locateOrderRow(page, orderDate, vendorOrderNumber) {
+  const targetDateOnly = orderDate; // YYYY-MM-DD
+  
+  for (let offset = 0; offset <= 210; offset += 70) {
+    console.log(`   🔍 מחפש את ההזמנה בעמוד עם offset pos=${offset}...`);
+    await page.goto(`http://www.ranfp.com/index.php?dir=site&page=members&op=orders&id=14&pos=${offset}`);
+    await page.waitForTimeout(2000);
+    
+    const hasTable = await page.evaluate(() => !!document.querySelector('table tbody tr'));
+    if (!hasTable) {
+      console.log('   ℹ️ העמוד ריק או שלא קיימת טבלת הזמנות, עוצר חיפוש.');
+      break;
+    }
+    
+    const editBtnSelector = await page.evaluate(({ targetDate, targetOrderNo }) => {
+      const rows = Array.from(document.querySelectorAll('table tbody tr'));
+      for (const row of rows) {
+        const cells = Array.from(row.querySelectorAll('td'));
+        if (cells.length < 5) continue;
+        
+        const orderNo = cells[4].innerText.trim();
+        const dateCell = cells[1].innerText.trim();
+        
+        if (targetOrderNo) {
+          if (orderNo === String(targetOrderNo)) {
+            const editBtn = row.querySelector('a[href*="edit="]') || row.querySelector('a[href*="view="]');
+            if (editBtn) return `a[href*="${editBtn.getAttribute('href')}"]`;
+          }
+        } else {
+          if (dateCell.startsWith(targetDate)) {
+            const editBtn = row.querySelector('a[href*="edit="]') || row.querySelector('a[href*="view="]');
+            if (editBtn) return `a[href*="${editBtn.getAttribute('href')}"]`;
+          }
+        }
+      }
+      return null;
+    }, { targetDate: targetDateOnly, targetOrderNo: vendorOrderNumber || null });
+    
+    if (editBtnSelector) {
+      console.log(`   ✅ נמצא כפתור להזמנה ${vendorOrderNumber || targetDateOnly} ב-offset pos=${offset}`);
+      return editBtnSelector;
+    }
+  }
+  
+  return null;
+}
+
 async function verifyRanOrder(order, credentials) {
   console.log(`🔍 מתחיל בדיקת אימות להזמנה ${order.id} לתאריך ${order.date}...`);
   
@@ -22,37 +70,22 @@ async function verifyRanOrder(order, credentials) {
     await page.getByRole('button', { name: 'התחבר' }).click();
     await page.waitForURL('**/index.php?dir=site&page=members&op=view*');
 
-    // 2. מעבר להזמנות שלי
-    await page.goto('http://www.ranfp.com/index.php?dir=site&page=members&op=orders');
-    await page.waitForTimeout(3000);
+    // 2. מעבר להזמנות שלי ומציאת ההזמנה
+    console.log('📅 מחפש את ההזמנה ב"ההזמנות שלי"...');
+    const editButtonSelector = await locateOrderRow(page, order.date, order.vendorOrderNumber);
 
-    const targetDateOnly = order.date; // YYYY-MM-DD
-    
-    // מציאת הקישור לעריכה או צפייה עבור התאריך המבוקש
-    const targetLink = await page.evaluate((targetDate) => {
-      const rows = Array.from(document.querySelectorAll('table tbody tr'));
-      for (const row of rows) {
-        const cells = Array.from(row.querySelectorAll('td'));
-        const hasDate = cells.some(td => td.classList.contains('dater') && td.innerText.trim().startsWith(targetDate));
-        if (hasDate) {
-          const link = row.querySelector('a[href*="edit="]') || row.querySelector('a[href*="view="]');
-          return link ? link.getAttribute('href') : null;
-        }
-      }
-      return null;
-    }, targetDateOnly);
-
-    if (!targetLink) {
-      console.log(`   ❌ לא נמצאה הזמנה פעילה באתר של ראן לתאריך ${targetDateOnly}.`);
+    if (!editButtonSelector) {
+      console.log(`   ❌ לא נמצאה הזמנה פעילה באתר של ראן לתאריך ${order.date}.`);
+      await browser.close();
       return {
         success: true,
         isMatch: false,
-        diffs: [`לא נמצאה הזמנה פעילה באתר של ראן לתאריך ${targetDateOnly}.`]
+        diffs: [`לא נמצאה הזמנה פעילה באתר של ראן לתאריך ${order.date}.`]
       };
     }
 
     // 3. כניסה לעמוד ההזמנה ושליפת כמויות בפועל
-    await page.goto(`http://www.ranfp.com/${targetLink}`);
+    await page.locator(editButtonSelector).first().click();
     await page.waitForTimeout(4000);
 
     const actualItems = await page.evaluate(() => {
