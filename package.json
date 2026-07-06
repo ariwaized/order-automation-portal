@@ -1,6 +1,6 @@
 {
   "name": "order-automation-portal",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Order Automation Portal with Playwright integration",
   "main": "server.js",
   "scripts": {
@@ -12,6 +12,6 @@
     "express": "^4.19.2",
     "firebase": "^12.15.0",
     "nodemailer": "^9.0.3",
-    "playwright": "^1.44.1"
+    "playwright": "1.44.1"
   }
 }
