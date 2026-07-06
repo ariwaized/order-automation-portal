@@ -1147,5 +1147,30 @@ textarea.form-control.text-area-large {
   overflow: visible;
 }
 
+/* Reminder Card & Badge Styles */
+.vendor-order-card.category-reminder {
+  background: rgba(234, 179, 8, 0.08) !important;
+  border: 1px solid rgba(234, 179, 8, 0.25) !important;
+  box-shadow: 0 4px 15px rgba(234, 179, 8, 0.03);
+}
+
+.vendor-order-card.category-reminder:hover {
+  border-color: rgba(234, 179, 8, 0.45) !important;
+  box-shadow: 0 4px 20px rgba(234, 179, 8, 0.08);
+}
+
+.vendor-order-card.category-reminder .vendor-card-name {
+  color: #facc15 !important;
+}
+
+.vendor-order-card.category-reminder .badge-reminder {
+  background-color: rgba(234, 179, 8, 0.15);
+  color: #facc15;
+  border: 1px solid rgba(234, 179, 8, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 
 

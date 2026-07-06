@@ -172,6 +172,7 @@
             <button class="btn filter-btn" data-category="bakery"><i class="fa-solid fa-bread-slice"></i> מאפים</button>
             <button class="btn filter-btn" data-category="vegetables"><i class="fa-solid fa-carrot"></i> ירקות</button>
             <button class="btn filter-btn" data-category="raw_materials"><i class="fa-solid fa-boxes-stacked"></i> חומרי גלם</button>
+            <button class="btn filter-btn" data-category="reminder"><i class="fa-solid fa-note-sticky"></i> תזכורות</button>
           </div>
         </div>
 
@@ -196,6 +197,7 @@
             <button class="btn filter-btn" data-category="bakery"><i class="fa-solid fa-bread-slice"></i> מאפים</button>
             <button class="btn filter-btn" data-category="vegetables"><i class="fa-solid fa-carrot"></i> ירקות</button>
             <button class="btn filter-btn" data-category="raw_materials"><i class="fa-solid fa-boxes-stacked"></i> חומרי גלם</button>
+            <button class="btn filter-btn" data-category="reminder"><i class="fa-solid fa-note-sticky"></i> תזכורות</button>
           </div>
         </div>
 
@@ -305,14 +307,14 @@
         <input type="hidden" id="order-vendor-id-input" required>
         
         <div class="form-body-scrollable">
-          <div class="form-group">
+          <div class="form-group" id="catalog-section-group">
             <label id="catalog-label-text">קטלוג מוצרים קבועים (מלא כמויות לפריטים להזמנה):</label>
             <div class="catalog-items-container" id="catalog-items-container">
               <!-- Loaded dynamically with pre-defined catalog inputs -->
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" id="custom-items-section-group">
             <label>מוצרים נוספים (מחוץ לקטלוג):</label>
             <div class="items-editor-container">
               <div class="items-list" id="order-items-list-container">
@@ -323,12 +325,18 @@
               </button>
             </div>
           </div>
+
+          <div class="form-group" id="reminder-section-group" style="display: none;">
+            <label for="reminder-text-input">תוכן התזכורת / פתק:</label>
+            <textarea id="reminder-text-input" class="form-control" placeholder="כתוב כאן את התזכורת או הפתק שלך ליום זה..." rows="6" style="resize: vertical;"></textarea>
+          </div>
         </div>
         
         <div class="modal-actions">
           <button type="button" class="btn btn-secondary" id="btn-cancel-order">ביטול</button>
           <button type="submit" class="btn btn-secondary" id="btn-save-draft" style="border-color: var(--color-primary); color: var(--color-primary);">שמור טיוטה</button>
           <button type="submit" class="btn btn-primary" id="btn-save-and-dispatch">שגר הזמנה</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-reminder" style="display: none;">שמור תזכורת</button>
         </div>
       </form>
     </div>
@@ -353,6 +361,7 @@
             <select id="vendor-type-select" class="form-control" required>
               <option value="email">שליחת אימייל</option>
               <option value="website">אוטומציית אתר</option>
+              <option value="none">ללא שיגור (תזכורת/פתק בלבד)</option>
             </select>
           </div>
           <div class="form-group">
@@ -361,6 +370,7 @@
               <option value="bakery">מאפים</option>
               <option value="vegetables">ירקות</option>
               <option value="raw_materials">חומרי גלם</option>
+              <option value="reminder">תזכורת / פתק</option>
             </select>
           </div>
         </div>

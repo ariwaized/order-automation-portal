@@ -855,7 +855,8 @@ function renderOrders() {
   const categories = {
     bakery: { name: 'מאפים', icon: 'fa-bread-slice', vendors: [] },
     vegetables: { name: 'ירקות', icon: 'fa-carrot', vendors: [] },
-    raw_materials: { name: 'חומרי גלם', icon: 'fa-boxes-stacked', vendors: [] }
+    raw_materials: { name: 'חומרי גלם', icon: 'fa-boxes-stacked', vendors: [] },
+    reminder: { name: 'תזכורות', icon: 'fa-note-sticky', vendors: [] }
   };
 
   vendors.forEach(v => {
@@ -882,9 +883,10 @@ function renderOrders() {
 
     cat.vendors.forEach(vendor => {
       const order = orders.find(o => o.vendorId === vendor.id);
+      const isReminderCat = vendor.category === 'reminder';
       
       const card = document.createElement('div');
-      card.className = `vendor-order-card ${order ? 'has-order' : 'no-order'}`;
+      card.className = `vendor-order-card ${order ? 'has-order' : 'no-order'} ${isReminderCat ? 'category-reminder' : ''}`;
       card.style.cursor = 'pointer';
       
       if (currentUserRole !== 'viewer') {
@@ -899,54 +901,67 @@ function renderOrders() {
         card.style.cursor = 'default';
       }
 
-      let statusBadge = '<span class="badge badge-no-order">לא הוזמן</span>';
-      let itemsPreview = 'אין הזמנה לתאריך זה. לחץ כאן ליצירה...';
+      let statusBadge = isReminderCat ? '<span class="badge badge-no-order">ריק</span>' : '<span class="badge badge-no-order">לא הוזמן</span>';
+      let itemsPreview = isReminderCat ? 'אין תזכורת ליום זה. לחץ לכתיבה...' : 'אין הזמנה לתאריך זה. לחץ כאן ליצירה...';
       let actionButtons = '';
 
       if (order) {
-        const badgeClass = `badge-${order.status}`;
-        let badgeText = '';
-        switch (order.status) {
-          case 'draft': badgeText = 'טיוטה'; break;
-          case 'pending_approval': badgeText = 'ממתין לאישור'; break;
-          case 'completed': badgeText = 'בוצע בהצלחה'; break;
-          case 'correction_sent': badgeText = 'נשלח תיקון'; break;
-        }
-        statusBadge = `<span class="badge ${badgeClass}"><span class="status-dot"></span> ${badgeText}</span>`;
-        
-        itemsPreview = order.items.map(i => `${i.name}: ${i.quantity} ${i.unit || ''}`).join(', ');
-
-        let dispatchBtnHTML = '';
-        if (order.status === 'pending_approval') {
-          dispatchBtnHTML = `
-            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); prepareDispatch('${order.id}')">
-              <i class="fa-solid fa-paper-plane"></i> שגר
-            </button>
-          `;
-        } else if (order.status === 'completed' || order.status === 'correction_sent') {
-          let verifyBtnHTML = '';
-          if (vendor.id === 'v_ran') {
-            verifyBtnHTML = `
-              <button class="btn btn-secondary btn-sm" style="color: var(--color-info); border-color: rgba(14,165,233,0.15);" onclick="event.stopPropagation(); verifyOrderOnDemand('${order.id}', this)">
-                <i class="fa-solid fa-shield-halved"></i> אימות
+        if (isReminderCat) {
+          statusBadge = `<span class="badge badge-reminder"><i class="fa-solid fa-sticky-note"></i> תזכורת</span>`;
+          itemsPreview = order.items && order.items[0] ? order.items[0].name : '';
+          
+          if (currentUserRole !== 'viewer') {
+            actionButtons = `
+              <button class="btn btn-secondary btn-sm text-danger" style="color: var(--color-danger); border-color: rgba(239,68,68,0.15);" onclick="event.stopPropagation(); deleteOrder('${order.id}')">
+                <i class="fa-solid fa-trash"></i>
               </button>
             `;
           }
-          dispatchBtnHTML = `
-            ${verifyBtnHTML}
-            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); prepareDispatch('${order.id}')">
-              <i class="fa-solid fa-rotate"></i> עדכן/תקן
-            </button>
-          `;
-        }
+        } else {
+          const badgeClass = `badge-${order.status}`;
+          let badgeText = '';
+          switch (order.status) {
+            case 'draft': badgeText = 'טיוטה'; break;
+            case 'pending_approval': badgeText = 'ממתין לאישור'; break;
+            case 'completed': badgeText = 'בוצע בהצלחה'; break;
+            case 'correction_sent': badgeText = 'נשלח תיקון'; break;
+          }
+          statusBadge = `<span class="badge ${badgeClass}"><span class="status-dot"></span> ${badgeText}</span>`;
+          
+          itemsPreview = order.items.map(i => `${i.name}: ${i.quantity} ${i.unit || ''}`).join(', ');
 
-        if (currentUserRole !== 'viewer') {
-          actionButtons = `
-            ${dispatchBtnHTML}
-            <button class="btn btn-secondary btn-sm text-danger" style="color: var(--color-danger); border-color: rgba(239,68,68,0.15);" onclick="event.stopPropagation(); deleteOrder('${order.id}')">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          `;
+          let dispatchBtnHTML = '';
+          if (order.status === 'pending_approval') {
+            dispatchBtnHTML = `
+              <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); prepareDispatch('${order.id}')">
+                <i class="fa-solid fa-paper-plane"></i> שגר
+              </button>
+            `;
+          } else if (order.status === 'completed' || order.status === 'correction_sent') {
+            let verifyBtnHTML = '';
+            if (vendor.id === 'v_ran') {
+              verifyBtnHTML = `
+                <button class="btn btn-secondary btn-sm" style="color: var(--color-info); border-color: rgba(14,165,233,0.15);" onclick="event.stopPropagation(); verifyOrderOnDemand('${order.id}', this)">
+                  <i class="fa-solid fa-shield-halved"></i> אימות
+                </button>
+              `;
+            }
+            dispatchBtnHTML = `
+              ${verifyBtnHTML}
+              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); prepareDispatch('${order.id}')">
+                <i class="fa-solid fa-rotate"></i> עדכן/תקן
+              </button>
+            `;
+          }
+
+          if (currentUserRole !== 'viewer') {
+            actionButtons = `
+              ${dispatchBtnHTML}
+              <button class="btn btn-secondary btn-sm text-danger" style="color: var(--color-danger); border-color: rgba(239,68,68,0.15);" onclick="event.stopPropagation(); deleteOrder('${order.id}')">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            `;
+          }
         }
       }
 
@@ -1198,6 +1213,9 @@ function setupEventListeners() {
   document.getElementById('btn-save-and-dispatch').addEventListener('click', () => {
     lastSubmitType = 'dispatch';
   });
+  document.getElementById('btn-save-reminder').addEventListener('click', () => {
+    lastSubmitType = 'completed';
+  });
 
   orderForm.addEventListener('submit', handleOrderSubmit);
   vendorForm.addEventListener('submit', handleVendorSubmit);
@@ -1311,21 +1329,28 @@ function openEditOrderModal(orderId) {
   orderIdInput.value = order.id;
   document.getElementById('order-vendor-id-input').value = order.vendorId;
   
-  loadVendorCatalog(order.vendorId, order.items);
+  updateBermanModalUI(order.vendorId);
 
-  orderItemsListContainer.innerHTML = '';
   const vendor = vendors.find(v => v.id === order.vendorId);
-  const catalogNames = vendor && vendor.catalog ? vendor.catalog.map(c => c.name) : [];
-  
-  const customItems = order.items.filter(i => !catalogNames.includes(i.name));
-  if (customItems.length > 0) {
-    customItems.forEach(item => {
-      addItemRow(item.name, item.quantity, item.unit);
-    });
+  const isReminder = vendor && vendor.category === 'reminder';
+
+  if (isReminder) {
+    const reminderText = order.items && order.items[0] ? order.items[0].name : '';
+    document.getElementById('reminder-text-input').value = reminderText;
+  } else {
+    loadVendorCatalog(order.vendorId, order.items);
+
+    orderItemsListContainer.innerHTML = '';
+    const catalogNames = vendor && vendor.catalog ? vendor.catalog.map(c => c.name) : [];
+    
+    const customItems = order.items.filter(i => !catalogNames.includes(i.name));
+    if (customItems.length > 0) {
+      customItems.forEach(item => {
+        addItemRow(item.name, item.quantity, item.unit);
+      });
+    }
   }
   
-  
-  updateBermanModalUI(order.vendorId);
   modalOrder.classList.add('active');
 }
 
@@ -1336,15 +1361,21 @@ function openNewOrderForVendor(vendorId) {
   const bermanErr = validateBermanRules(vendorId, true);
   if (bermanErr) { alert(bermanErr); return; }
 
-  orderModalTitle.textContent = `הזמנה חדשה - ${vendor.name}`;
+  const isReminder = vendor.category === 'reminder';
+  orderModalTitle.textContent = isReminder ? `פתק תזכורת - ${vendor.name}` : `הזמנה חדשה - ${vendor.name}`;
   orderIdInput.value = '';
   orderForm.reset();
   document.getElementById('order-vendor-id-input').value = vendor.id;
   
-  loadVendorCatalog(vendor.id);
-  orderItemsListContainer.innerHTML = '';
-  
   updateBermanModalUI(vendor.id);
+
+  if (isReminder) {
+    document.getElementById('reminder-text-input').value = '';
+  } else {
+    loadVendorCatalog(vendor.id);
+    orderItemsListContainer.innerHTML = '';
+  }
+  
   modalOrder.classList.add('active');
 }
 
@@ -1383,52 +1414,66 @@ async function handleOrderSubmit(e) {
   }
 
   const items = [];
+  const isReminder = vendor && vendor.category === 'reminder';
 
-  // 1. Predefined catalog items
-  const catalogRows = document.querySelectorAll('.catalog-item-row');
-  catalogRows.forEach(row => {
-    const input = row.querySelector('.catalog-item-quantity');
-    const val = input.value.trim();
-    if (val !== '') {
-      const quantity = parseFloat(val);
-      if (!isNaN(quantity)) {
-        const isValidQty = orderId ? (quantity >= 0) : (quantity > 0);
-        if (isValidQty) {
-          items.push({
-            name: input.getAttribute('data-name'),
-            quantity: quantity,
-            unit: input.getAttribute('data-unit'),
-            sku: input.getAttribute('data-sku') || undefined
-          });
+  if (isReminder) {
+    const reminderVal = document.getElementById('reminder-text-input').value.trim();
+    if (!reminderVal) {
+      alert('אנא הזן תוכן לתזכורת');
+      return;
+    }
+    items.push({
+      name: reminderVal,
+      quantity: 1,
+      unit: ''
+    });
+  } else {
+    // 1. Predefined catalog items
+    const catalogRows = document.querySelectorAll('.catalog-item-row');
+    catalogRows.forEach(row => {
+      const input = row.querySelector('.catalog-item-quantity');
+      const val = input.value.trim();
+      if (val !== '') {
+        const quantity = parseFloat(val);
+        if (!isNaN(quantity)) {
+          const isValidQty = orderId ? (quantity >= 0) : (quantity > 0);
+          if (isValidQty) {
+            items.push({
+              name: input.getAttribute('data-name'),
+              quantity: quantity,
+              unit: input.getAttribute('data-unit'),
+              sku: input.getAttribute('data-sku') || undefined
+            });
+          }
         }
       }
-    }
-  });
+    });
 
-  // 2. Custom items
-  const itemRows = orderItemsListContainer.querySelectorAll('.item-row');
-  itemRows.forEach(row => {
-    const nameInput = row.querySelector('.item-name');
-    const name = nameInput ? nameInput.value.trim() : '';
-    const quantityInput = row.querySelector('.item-quantity');
-    const val = quantityInput ? quantityInput.value.trim() : '';
-    const unitSelect = row.querySelector('.item-unit');
-    const unit = unitSelect ? unitSelect.value : 'יחידות';
-    
-    if (name && val !== '') {
-      const quantity = parseFloat(val);
-      if (!isNaN(quantity)) {
-        const isValidQty = orderId ? (quantity >= 0) : (quantity > 0);
-        if (isValidQty) {
-          items.push({ name, quantity, unit });
+    // 2. Custom items
+    const itemRows = orderItemsListContainer.querySelectorAll('.item-row');
+    itemRows.forEach(row => {
+      const nameInput = row.querySelector('.item-name');
+      const name = nameInput ? nameInput.value.trim() : '';
+      const quantityInput = row.querySelector('.item-quantity');
+      const val = quantityInput ? quantityInput.value.trim() : '';
+      const unitSelect = row.querySelector('.item-unit');
+      const unit = unitSelect ? unitSelect.value : 'יחידות';
+      
+      if (name && val !== '') {
+        const quantity = parseFloat(val);
+        if (!isNaN(quantity)) {
+          const isValidQty = orderId ? (quantity >= 0) : (quantity > 0);
+          if (isValidQty) {
+            items.push({ name, quantity, unit });
+          }
         }
       }
-    }
-  });
+    });
 
-  if (items.length === 0 && !orderId) {
-    alert('יש להזין כמות לפחות עבור מוצר אחד');
-    return;
+    if (items.length === 0 && !orderId) {
+      alert('יש להזין כמות לפחות עבור מוצר אחד');
+      return;
+    }
   }
 
   const bermanErr = validateBermanRules(vendorId, false, items, lastSubmitType === 'dispatch');
@@ -1438,7 +1483,7 @@ async function handleOrderSubmit(e) {
   }
 
   const existingOrder = orders.find(o => o.id === orderId);
-  const targetStatus = (lastSubmitType === 'draft') ? 'draft' : 'pending_approval';
+  const targetStatus = (lastSubmitType === 'completed') ? 'completed' : ((lastSubmitType === 'draft') ? 'draft' : 'pending_approval');
 
   const orderPayload = {
     id: orderId || undefined,
@@ -1454,9 +1499,11 @@ async function handleOrderSubmit(e) {
     orderPayload.actionsLog = existingOrder.actionsLog || [];
     orderPayload.actionsLog.push({
       timestamp: new Date().toISOString(),
-      action: lastSubmitType === 'draft' 
-        ? 'בוצע עדכון כמויות בהזמנה (נשמר כטיוטה)' 
-        : 'בוצע עדכון כמויות בהזמנה (ממתין לשיגור עדכון)'
+      action: lastSubmitType === 'completed'
+        ? 'עודכן פתק תזכורת'
+        : (lastSubmitType === 'draft' 
+            ? 'בוצע עדכון כמויות בהזמנה (נשמר כטיוטה)' 
+            : 'בוצע עדכון כמויות בהזמנה (ממתין לשיגור עדכון)')
     });
     if (existingOrder.dispatchedItems) {
       orderPayload.dispatchedItems = existingOrder.dispatchedItems;
@@ -1575,11 +1622,16 @@ function toggleVendorTypeFields(type) {
     vendorWebsiteOptions.classList.add('hidden');
     vendorEmailInput.required = true;
     vendorWebsiteUrl.required = false;
-  } else {
+  } else if (type === 'website') {
     vendorEmailOptions.classList.add('hidden');
     vendorWebsiteOptions.classList.remove('hidden');
     vendorEmailInput.required = false;
     vendorWebsiteUrl.required = true;
+  } else {
+    vendorEmailOptions.classList.add('hidden');
+    vendorWebsiteOptions.classList.add('hidden');
+    vendorEmailInput.required = false;
+    vendorWebsiteUrl.required = false;
   }
 }
 
@@ -1677,28 +1729,55 @@ function validateBermanRules(vendorId, isOpeningModal = false, items = [], isDis
 
 function updateBermanModalUI(vendorId) {
   const dispatchBtn = document.getElementById('btn-save-and-dispatch');
+  const saveDraftBtn = document.getElementById('btn-save-draft');
+  const saveReminderBtn = document.getElementById('btn-save-reminder');
   
-  if (vendorId === 'v_berman') {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const target = new Date(selectedDate);
-    target.setHours(0, 0, 0, 0);
-    const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+  const catalogSection = document.getElementById('catalog-section-group');
+  const customItemsSection = document.getElementById('custom-items-section-group');
+  const reminderSection = document.getElementById('reminder-section-group');
+
+  const vendor = vendors.find(v => v.id === vendorId);
+  const isReminder = vendor && vendor.category === 'reminder';
+
+  if (isReminder) {
+    if (catalogSection) catalogSection.style.display = 'none';
+    if (customItemsSection) customItemsSection.style.display = 'none';
+    if (reminderSection) reminderSection.style.display = 'block';
     
-    if (diffDays > 4) {
-      dispatchBtn.disabled = true;
-      dispatchBtn.title = "לא ניתן לשגר לברמן יותר מ-4 ימים מראש. שמור כטיוטה.";
-      dispatchBtn.style.opacity = "0.5";
-      dispatchBtn.style.cursor = "not-allowed";
-      return;
+    if (saveReminderBtn) saveReminderBtn.style.display = 'block';
+    if (saveDraftBtn) saveDraftBtn.style.display = 'none';
+    if (dispatchBtn) dispatchBtn.style.display = 'none';
+  } else {
+    if (catalogSection) catalogSection.style.display = 'block';
+    if (customItemsSection) customItemsSection.style.display = 'block';
+    if (reminderSection) reminderSection.style.display = 'none';
+    
+    if (saveReminderBtn) saveReminderBtn.style.display = 'none';
+    if (saveDraftBtn) saveDraftBtn.style.display = 'block';
+    if (dispatchBtn) dispatchBtn.style.display = 'block';
+
+    if (vendorId === 'v_berman') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const target = new Date(selectedDate);
+      target.setHours(0, 0, 0, 0);
+      const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+      
+      if (diffDays > 4) {
+        dispatchBtn.disabled = true;
+        dispatchBtn.title = "לא ניתן לשגר לברמן יותר מ-4 ימים מראש. שמור כטיוטה.";
+        dispatchBtn.style.opacity = "0.5";
+        dispatchBtn.style.cursor = "not-allowed";
+        return;
+      }
     }
+    
+    // Default state for non-Berman or valid Berman
+    dispatchBtn.disabled = false;
+    dispatchBtn.title = "";
+    dispatchBtn.style.opacity = "1";
+    dispatchBtn.style.cursor = "pointer";
   }
-  
-  // Default state for non-Berman or valid Berman
-  dispatchBtn.disabled = false;
-  dispatchBtn.title = "";
-  dispatchBtn.style.opacity = "1";
-  dispatchBtn.style.cursor = "pointer";
 }
 
 async function deleteVendor(vendorId) {
