@@ -1087,5 +1087,60 @@ textarea.form-control.text-area-large {
   border: 1px solid var(--border-color);
 }
 
+/* Full-screen order view */
+#modal-order {
+  background-color: #080d19;
+  backdrop-filter: none;
+}
+
+#modal-order .modal-content {
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background-color: #080d19;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+#modal-order #order-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+#modal-order .form-body-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  max-width: 850px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+#modal-order .modal-header {
+  border-bottom: 1px solid var(--border-color);
+  background-color: #080d19;
+  padding: 20px 24px;
+}
+
+#modal-order .modal-actions {
+  border-top: 1px solid var(--border-color);
+  background-color: #080d19;
+  padding: 20px 24px;
+  max-width: 850px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
 
 

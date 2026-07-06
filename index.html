@@ -304,22 +304,24 @@
         <input type="hidden" id="order-id-input">
         <input type="hidden" id="order-vendor-id-input" required>
         
-        <div class="form-group">
-          <label id="catalog-label-text">קטלוג מוצרים קבועים (מלא כמויות לפריטים להזמנה):</label>
-          <div class="catalog-items-container" id="catalog-items-container">
-            <!-- Loaded dynamically with pre-defined catalog inputs -->
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>מוצרים נוספים (מחוץ לקטלוג):</label>
-          <div class="items-editor-container">
-            <div class="items-list" id="order-items-list-container">
-              <!-- Edit fields for custom items will load here -->
+        <div class="form-body-scrollable">
+          <div class="form-group">
+            <label id="catalog-label-text">קטלוג מוצרים קבועים (מלא כמויות לפריטים להזמנה):</label>
+            <div class="catalog-items-container" id="catalog-items-container">
+              <!-- Loaded dynamically with pre-defined catalog inputs -->
             </div>
-            <button type="button" class="btn btn-secondary btn-sm mt-2" id="btn-add-item-row">
-              <i class="fa-solid fa-plus"></i> הוסף מוצר חיצוני
-            </button>
+          </div>
+
+          <div class="form-group">
+            <label>מוצרים נוספים (מחוץ לקטלוג):</label>
+            <div class="items-editor-container">
+              <div class="items-list" id="order-items-list-container">
+                <!-- Edit fields for custom items will load here -->
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm mt-2" id="btn-add-item-row">
+                <i class="fa-solid fa-plus"></i> הוסף מוצר חיצוני
+              </button>
+            </div>
           </div>
         </div>
         
