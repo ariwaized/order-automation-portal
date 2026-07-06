@@ -1142,5 +1142,10 @@ textarea.form-control.text-area-large {
   box-sizing: border-box;
 }
 
+#modal-order .catalog-items-container {
+  max-height: none;
+  overflow: visible;
+}
+
 
 
