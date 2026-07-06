@@ -1,3 +1,7 @@
+// Configure API URL dynamically based on location
+const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_URL = IS_LOCAL ? 'http://localhost:3000' : 'https://order-automation-backend.onrender.com';
+
 // Default Database Seed Data (used for initialization)
 const DEFAULT_VENDORS = [
   {
@@ -510,7 +514,7 @@ async function executeDispatchPayload(orderId) {
   if (vendor.type === 'email') {
     try {
       const emailPayload = await prepareActionPayload(orderId);
-      const response = await fetch('http://localhost:3000/api/send-email', {
+      const response = await fetch(`${API_URL}/api/send-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -534,7 +538,7 @@ async function executeDispatchPayload(orderId) {
   } else if (vendor.type === 'website') {
     if (vendor.id === 'v_berman' || vendor.id === 'v_ran') {
       try {
-        const response = await fetch('http://localhost:3000/api/dispatch', {
+        const response = await fetch(`${API_URL}/api/dispatch`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1953,7 +1957,7 @@ async function loadDeveloperZone() {
     // 1. Fetch screenshots from server API
     let screenshotFiles = [];
     try {
-      const res = await fetch('http://localhost:3000/api/screenshots');
+      const res = await fetch(`${API_URL}/api/screenshots`);
       if (res.ok) {
         screenshotFiles = await res.json();
       }
@@ -1981,7 +1985,7 @@ async function loadDeveloperZone() {
               <span style="color: #fff; font-weight: 500;">${file}</span>
               <div style="font-size: 0.8rem; color: var(--text-secondary);">מזהה הזמנה: ${orderId}</div>
             </div>
-            <a href="http://localhost:3000/screenshots/${file}" target="_blank" class="btn btn-secondary btn-sm" style="color: var(--color-info); border-color: rgba(14,165,233,0.15); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+            <a href="${API_URL}/screenshots/${file}" target="_blank" class="btn btn-secondary btn-sm" style="color: var(--color-info); border-color: rgba(14,165,233,0.15); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
               <i class="fa-regular fa-image"></i> צפה בתמונה
             </a>
           `;
@@ -2051,7 +2055,7 @@ async function verifyOrderOnDemand(orderId, btn) {
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> מאמת...';
   
   try {
-    const response = await fetch('http://localhost:3000/api/verify', {
+    const response = await fetch(`${API_URL}/api/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ orderId })

@@ -113,9 +113,15 @@ async function executeRanOrder(order, credentials) {
 
   printPreview(order, targetDate, credentials);
 
-  await countdown(5, '▶️  מתחיל אוטומציה...');
+  const isHeadless = process.env.HEADLESS !== 'false';
+  if (!isHeadless) {
+    await countdown(5, '▶️  מתחיל אוטומציה...');
+  }
 
-  const browser = await chromium.launch({ headless: false, slowMo: 300 });
+  const browser = await chromium.launch({ 
+    headless: isHeadless, 
+    slowMo: isHeadless ? 0 : 300 
+  });
   const context = await browser.newContext({ locale: 'he-IL', timezoneId: 'Asia/Jerusalem' });
   const page = await context.newPage();
   page.setDefaultTimeout(30000);
