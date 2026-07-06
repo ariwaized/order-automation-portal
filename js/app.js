@@ -1,6 +1,6 @@
 // Configure API URL dynamically based on location
 const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_URL = IS_LOCAL ? 'http://localhost:3000' : 'https://order-automation-backend.onrender.com';
+const API_URL = IS_LOCAL ? 'http://localhost:3000' : 'https://order-automation-portal.onrender.com';
 
 // Default Database Seed Data (used for initialization)
 const DEFAULT_VENDORS = [
