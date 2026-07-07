@@ -629,6 +629,7 @@ let currentActiveOrderId = null;
 let currentCategoryFilter = 'all';
 let currentVendorCategoryFilter = 'all';
 let lastSubmitType = 'dispatch';
+let dispatchPollingInterval = null;
 
 // DOM Elements
 const dbStatus = document.getElementById('db-status');
@@ -884,12 +885,13 @@ function renderOrders() {
     cat.vendors.forEach(vendor => {
       const order = orders.find(o => o.vendorId === vendor.id);
       const isReminderCat = vendor.category === 'reminder';
+      const isDispatching = order && order.status === 'dispatching';
       
       const card = document.createElement('div');
-      card.className = `vendor-order-card ${order ? 'has-order' : 'no-order'} ${isReminderCat ? 'category-reminder' : ''}`;
-      card.style.cursor = 'pointer';
+      card.className = `vendor-order-card ${order ? 'has-order' : 'no-order'} ${isReminderCat ? 'category-reminder' : ''} ${isDispatching ? 'dispatching-active' : ''}`;
+      card.style.cursor = isDispatching ? 'default' : 'pointer';
       
-      if (currentUserRole !== 'viewer') {
+      if (currentUserRole !== 'viewer' && !isDispatching) {
         card.addEventListener('click', () => {
           if (order) {
             openEditOrderModal(order.id);
@@ -925,8 +927,14 @@ function renderOrders() {
             case 'pending_approval': badgeText = 'ממתין לאישור'; break;
             case 'completed': badgeText = 'בוצע בהצלחה'; break;
             case 'correction_sent': badgeText = 'נשלח תיקון'; break;
+            case 'dispatching': badgeText = 'משגר...'; break;
           }
-          statusBadge = `<span class="badge ${badgeClass}"><span class="status-dot"></span> ${badgeText}</span>`;
+          
+          if (order.status === 'dispatching') {
+            statusBadge = `<span class="badge badge-dispatching"><i class="fa-solid fa-spinner fa-spin" style="margin-left: 5px;"></i>${badgeText}</span>`;
+          } else {
+            statusBadge = `<span class="badge ${badgeClass}"><span class="status-dot"></span> ${badgeText}</span>`;
+          }
           
           itemsPreview = order.items.map(i => `${i.name}: ${i.quantity} ${i.unit || ''}`).join(', ');
 
@@ -954,7 +962,7 @@ function renderOrders() {
             `;
           }
 
-          if (currentUserRole !== 'viewer') {
+          if (currentUserRole !== 'viewer' && order.status !== 'dispatching') {
             actionButtons = `
               ${dispatchBtnHTML}
               <button class="btn btn-secondary btn-sm text-danger" style="color: var(--color-danger); border-color: rgba(239,68,68,0.15);" onclick="event.stopPropagation(); deleteOrder('${order.id}')">
@@ -991,6 +999,8 @@ function renderOrders() {
       </div>
     `;
   }
+  
+  checkAndStartDispatchPolling();
 }
 
 async function renderActivityLogs() {
@@ -1854,19 +1864,33 @@ async function executeDispatch() {
   if (!currentActiveOrderId) return;
   
   btnConfirmSafetyDispatch.disabled = true;
-  btnConfirmSafetyDispatch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> משגר כעת...';
+  btnConfirmSafetyDispatch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> מפעיל שיגור...';
   
   try {
-    const result = await executeDispatchPayload(currentActiveOrderId);
-    if (result.success) {
-      modalSafetyConfirm.classList.remove('active');
-      refreshAllData();
-    } else {
-      alert('שגיאה בשיגור ההזמנה');
+    // 1. Update status locally and in Firestore to 'dispatching'
+    const order = orders.find(o => o.id === currentActiveOrderId);
+    if (order) {
+      order.status = 'dispatching';
+      if (!order.actionsLog) order.actionsLog = [];
+      order.actionsLog.push({
+        timestamp: new Date().toISOString(),
+        action: 'שיגור ההזמנה הופעל ברקע (משגר...)'
+      });
+      await dbOps.saveOrder(order);
     }
+
+    // 2. Trigger the backend API call asynchronously (without waiting)
+    executeDispatchPayload(currentActiveOrderId).catch(err => {
+      console.error('Async dispatch trigger failed:', err);
+    });
+
+    // 3. Immediately close safety confirm modal and refresh UI to show 'dispatching' state
+    modalSafetyConfirm.classList.remove('active');
+    refreshAllData();
+
   } catch (err) {
     console.error('Error executing dispatch:', err);
-    alert('שגיאה בשיגור ההזמנה');
+    alert('שגיאה בהפעלת שיגור ההזמנה');
   } finally {
     btnConfirmSafetyDispatch.disabled = false;
     btnConfirmSafetyDispatch.innerHTML = '<i class="fa-solid fa-paper-plane"></i> אשר ושגר הזמנה';
@@ -2214,5 +2238,40 @@ async function verifyOrderOnDemand(orderId, btn) {
     btn.innerHTML = originalHtml;
     console.error('Verification failed:', err);
     alert('שגיאה במהלך בדיקת האימות: ' + err.message);
+  }
+}
+
+function checkAndStartDispatchPolling() {
+  const hasDispatchingOrders = orders.some(o => o.status === 'dispatching');
+  
+  if (hasDispatchingOrders) {
+    if (!dispatchPollingInterval) {
+      console.log('[Polling] Starting background dispatch polling...');
+      dispatchPollingInterval = setInterval(async () => {
+        try {
+          // Fetch latest orders for the selected date from DB
+          orders = await dbOps.getOrders(selectedDate);
+          renderOrders();
+          renderActivityLogs();
+          renderDashboardStats();
+          renderDailySummaryTable();
+          
+          // If no more dispatching orders, stop polling
+          if (!orders.some(o => o.status === 'dispatching')) {
+            console.log('[Polling] No more active dispatches. Stopping polling.');
+            clearInterval(dispatchPollingInterval);
+            dispatchPollingInterval = null;
+          }
+        } catch (err) {
+          console.error('[Polling] Error in polling check:', err);
+        }
+      }, 4000); // Poll every 4 seconds
+    }
+  } else {
+    if (dispatchPollingInterval) {
+      console.log('[Polling] Stopping polling (no active dispatches found).');
+      clearInterval(dispatchPollingInterval);
+      dispatchPollingInterval = null;
+    }
   }
 }

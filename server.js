@@ -49,35 +49,78 @@ app.post('/api/dispatch', async (req, res) => {
   console.log(`Order ID: ${orderData.id}, Date: ${orderData.date}`);
   console.log(`======================================\n`);
 
-  try {
-    if (vendorId === 'v_berman') {
-      // Execute Berman automation
-      const result = await executeBermanOrder(orderData, credentials);
-      return res.status(200).json({ success: true, message: result.message });
-    } else if (vendorId === 'v_ran') {
-      // Execute Ran automation
-      const result = await executeRanOrder(orderData, credentials);
-      // Save order number to Firebase if returned
-      if (result.success && result.vendorOrderNumber) {
-        try {
-          const { doc, updateDoc } = require('firebase/firestore');
-          await updateDoc(doc(db, 'orders', orderData.id), {
-            vendorOrderNumber: result.vendorOrderNumber
-          });
-          console.log(`[Firebase] Saved vendorOrderNumber ${result.vendorOrderNumber} for order ${orderData.id}`);
-        } catch (fbErr) {
-          console.error('[Firebase] Failed to save vendorOrderNumber:', fbErr);
-        }
+  // Respond immediately to the client to avoid blocking the UI
+  res.status(200).json({ success: true, message: 'שיגור אוטומטי הופעל ברקע בשרת.' });
+
+  // Run the automation in the background asynchronously
+  (async () => {
+    const { doc, updateDoc, getDoc } = require('firebase/firestore');
+    const orderDocRef = doc(db, 'orders', orderData.id);
+
+    try {
+      let result;
+      if (vendorId === 'v_berman') {
+        result = await executeBermanOrder(orderData, credentials);
+      } else if (vendorId === 'v_ran') {
+        result = await executeRanOrder(orderData, credentials);
+      } else {
+        console.error(`[Background] Automation for vendor '${vendorId}' not implemented.`);
+        return;
       }
-      return res.status(200).json({ success: true, message: result.message, vendorOrderNumber: result.vendorOrderNumber });
-    } else {
-      // Handle other vendors if needed in the future
-      return res.status(400).json({ error: `Automation for vendor '${vendorId}' is not implemented yet.` });
+
+      // Success path
+      const isCorrection = orderData.dispatchedItems && orderData.dispatchedItems.length > 0;
+      const targetStatus = isCorrection ? 'correction_sent' : 'completed';
+      const logMessage = `בוצעה אוטומציה בהצלחה באתר: ${result.message || ''}`;
+
+      const updatePayload = {
+        status: targetStatus,
+        dispatchedItems: orderData.items
+      };
+
+      if (result.vendorOrderNumber) {
+        updatePayload.vendorOrderNumber = result.vendorOrderNumber;
+      }
+
+      // Get current actionsLog to append
+      const docSnap = await getDoc(orderDocRef);
+      if (docSnap.exists()) {
+        const currentData = docSnap.data();
+        const actionsLog = currentData.actionsLog || [];
+        actionsLog.push({
+          timestamp: new Date().toISOString(),
+          action: logMessage
+        });
+        updatePayload.actionsLog = actionsLog;
+      }
+
+      await updateDoc(orderDocRef, updatePayload);
+      console.log(`[Background] Order ${orderData.id} status updated to ${targetStatus}`);
+
+    } catch (error) {
+      console.error('[Background] Automation failed:', error);
+      // Revert status to pending_approval and log the error
+      try {
+        const docSnap = await getDoc(orderDocRef);
+        if (docSnap.exists()) {
+          const currentData = docSnap.data();
+          const actionsLog = currentData.actionsLog || [];
+          actionsLog.push({
+            timestamp: new Date().toISOString(),
+            action: `❌ שגיאה באוטומציה: ${error.message}`
+          });
+          await updateDoc(orderDocRef, {
+            status: 'pending_approval',
+            error: error.message,
+            actionsLog: actionsLog
+          });
+          console.log(`[Background] Order ${orderData.id} reverted to pending_approval`);
+        }
+      } catch (fbErr) {
+        console.error('[Background] Failed to revert order status in Firestore:', fbErr);
+      }
     }
-  } catch (error) {
-    console.error('Automation failed:', error);
-    return res.status(500).json({ success: false, error: error.message });
-  }
+  })();
 });
 
 // API endpoint to send emails via SMTP
