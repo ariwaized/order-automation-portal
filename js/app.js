@@ -306,12 +306,6 @@ const dbOps = {
             delete copy.id;
             await firebaseDb.collection('vendors').doc(localV.id).set(copy);
             updated = true;
-          } else if ((localV.id === 'v_ran' || localV.id === 'v_berman') && (!fbV.catalog || fbV.catalog.length !== localV.catalog.length)) {
-            // Only update the catalog field to preserve user's custom username, password, etc.
-            await firebaseDb.collection('vendors').doc(localV.id).update({
-              catalog: localV.catalog
-            });
-            updated = true;
           }
         }
         
