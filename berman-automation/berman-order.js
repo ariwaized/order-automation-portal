@@ -129,7 +129,7 @@ async function executeBermanOrder(order, credentials) {
     const inputs = page.locator('input');
     await inputs.nth(0).fill(credentials.username);
     await inputs.nth(1).fill(credentials.password);
-    await page.locator('button', { hasText: 'כניסה' }).filter({ visible: true }).click();
+    await page.locator('#logIn').click();
     
     await page.waitForTimeout(3000);
     console.log('   ✅ כניסה הצליחה');
