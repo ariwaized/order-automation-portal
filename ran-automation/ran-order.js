@@ -120,7 +120,13 @@ async function executeRanOrder(order, credentials) {
 
   const browser = await chromium.launch({ 
     headless: isHeadless, 
-    slowMo: isHeadless ? 0 : 300 
+    slowMo: isHeadless ? 0 : 300,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu'
+    ]
   });
   const context = await browser.newContext({ locale: 'he-IL', timezoneId: 'Asia/Jerusalem' });
   const page = await context.newPage();

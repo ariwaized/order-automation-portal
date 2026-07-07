@@ -57,7 +57,15 @@ async function locateOrderRow(page, orderDate, vendorOrderNumber) {
 async function verifyRanOrder(order, credentials) {
   console.log(`🔍 מתחיל בדיקת אימות להזמנה ${order.id} לתאריך ${order.date}...`);
   
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ 
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu'
+    ]
+  });
   const context = await browser.newContext({ locale: 'he-IL', timezoneId: 'Asia/Jerusalem' });
   const page = await context.newPage();
   page.setDefaultTimeout(30000);

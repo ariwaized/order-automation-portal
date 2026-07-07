@@ -113,7 +113,13 @@ async function executeBermanOrder(order, credentials) {
 
   const browser = await chromium.launch({ 
     headless: isHeadless, 
-    slowMo: isHeadless ? 0 : SLOW_MO 
+    slowMo: isHeadless ? 0 : SLOW_MO,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu'
+    ]
   });
   
   // 1. הגדרת אפשרויות הדפדפן
