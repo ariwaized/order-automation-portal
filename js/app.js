@@ -2093,8 +2093,9 @@ async function loadDeveloperZone() {
         screenshotsContainer.innerHTML = '<div style="color: var(--text-secondary); padding: 10px;">אין צילומי מסך זמינים בשרת המקומי.</div>';
       } else {
         screenshotFiles.forEach(file => {
-          // File name format: order_o_berman_1.png or order_o_1721234567890.png
-          const orderId = file.replace('order_', '').replace('.png', '');
+          // File name format: order_o_berman_1.png or error_o_1721234567890.png
+          const isErrorImg = file.startsWith('error_');
+          const orderId = file.replace('order_', '').replace('error_', '').replace('.png', '');
           const li = document.createElement('li');
           li.style.display = 'flex';
           li.style.justifyContent = 'space-between';
@@ -2104,7 +2105,9 @@ async function loadDeveloperZone() {
           
           li.innerHTML = `
             <div>
-              <span style="color: #fff; font-weight: 500;">${file}</span>
+              <span style="color: ${isErrorImg ? 'var(--color-danger)' : '#fff'}; font-weight: 500;">
+                ${isErrorImg ? '<i class="fa-solid fa-triangle-exclamation" style="margin-left: 5px;"></i>שגיאה: ' : ''}${file}
+              </span>
               <div style="font-size: 0.8rem; color: var(--text-secondary);">מזהה הזמנה: ${orderId}</div>
             </div>
             <a href="${API_URL}/screenshots/${file}" target="_blank" class="btn btn-secondary btn-sm" style="color: var(--color-info); border-color: rgba(14,165,233,0.15); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">

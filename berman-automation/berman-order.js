@@ -100,10 +100,16 @@ async function executeBermanOrder(order, credentials) {
 
   printPreview(order, targetDate, credentials);
 
-  // ספירה לאחור לפני התחלה - אפשרות לבטל
-  await countdown(5, '▶️  מתחיל אוטומציה...');
+  const isHeadless = process.env.HEADLESS !== 'false';
+  if (!isHeadless) {
+    // ספירה לאחור לפני התחלה - אפשרות לבטל
+    await countdown(5, '▶️  מתחיל אוטומציה...');
+  }
 
-  const browser = await chromium.launch({ headless: false, slowMo: SLOW_MO });
+  const browser = await chromium.launch({ 
+    headless: isHeadless, 
+    slowMo: isHeadless ? 0 : SLOW_MO 
+  });
   
   // 1. הגדרת אפשרויות הדפדפן
   const context = await browser.newContext({ locale: 'he-IL', timezoneId: 'Asia/Jerusalem' });
@@ -302,7 +308,21 @@ async function executeBermanOrder(order, credentials) {
   } catch (err) {
     console.error('\n❌ שגיאה:', err.message);
     if (browser) {
-       await browser.close();
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const screenshotsDir = path.join(__dirname, '..', 'screenshots');
+        if (!fs.existsSync(screenshotsDir)) {
+          fs.mkdirSync(screenshotsDir, { recursive: true });
+        }
+        const orderId = order.id || 'test';
+        const screenshotPath = path.join(screenshotsDir, `error_${orderId}.png`);
+        await page.screenshot({ path: screenshotPath });
+        console.log(`📸 צילום מסך של השגיאה נשמר בכתובת: ${screenshotPath}`);
+      } catch (screenErr) {
+        console.error('Failed to take error screenshot:', screenErr);
+      }
+      await browser.close();
     }
     throw err;
   }

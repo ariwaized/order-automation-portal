@@ -279,7 +279,22 @@ async function executeRanOrder(order, credentials) {
 
   } catch (err) {
     console.error('\n❌ שגיאה באוטומציה:', err.message);
-    if (browser) await browser.close();
+    if (browser) {
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const screenshotsDir = path.join(__dirname, '..', 'screenshots');
+        if (!fs.existsSync(screenshotsDir)) {
+          fs.mkdirSync(screenshotsDir, { recursive: true });
+        }
+        const screenshotPath = path.join(screenshotsDir, `error_${order.id || 'dispatch'}.png`);
+        await page.screenshot({ path: screenshotPath });
+        console.log(`📸 צילום מסך של השגיאה נשמר בכתובת: ${screenshotPath}`);
+      } catch (screenErr) {
+        console.error('Failed to take error screenshot:', screenErr);
+      }
+      await browser.close();
+    }
     throw err;
   }
 }

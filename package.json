@@ -1,6 +1,6 @@
 {
   "name": "order-automation-portal",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Order Automation Portal with Playwright integration",
   "main": "server.js",
   "scripts": {
