@@ -54,12 +54,17 @@ async function closePopupIfExists(page, stepLabel) {
   console.log(`📢 ${stepLabel} — מחפש הודעה קופצת (פופ-אפ)...`);
   try {
     const xBtn = page.locator('span.material-symbols-outlined', { hasText: 'close' }).first();
-    await xBtn.waitFor({ state: 'visible', timeout: 5000 });
+    await xBtn.waitFor({ state: 'visible', timeout: 15000 });
     await xBtn.click();
     console.log('   ✅ הודעה נסגרה');
     await page.waitForTimeout(800);
     return true;
   } catch (e) {
+    // ניסיון מקביל ללחוץ על Escape למקרה שהמודל פתוח אך הכפתור לא אותר
+    try {
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(500);
+    } catch (escErr) {}
     console.log('   ℹ️  לא הופיעה הודעה - ממשיך');
     return false;
   }
