@@ -301,10 +301,16 @@ const dbOps = {
         for (const localV of DEFAULT_VENDORS) {
           const fbV = firebaseVendors.find(v => v.id === localV.id);
           // Re-create if missing, or update if catalog size is different (meaning it's the old mock catalog!)
-          if (!fbV || ((localV.id === 'v_ran' || localV.id === 'v_berman') && (!fbV.catalog || fbV.catalog.length !== localV.catalog.length))) {
+          if (!fbV) {
             const copy = { ...localV };
             delete copy.id;
             await firebaseDb.collection('vendors').doc(localV.id).set(copy);
+            updated = true;
+          } else if ((localV.id === 'v_ran' || localV.id === 'v_berman') && (!fbV.catalog || fbV.catalog.length !== localV.catalog.length)) {
+            // Only update the catalog field to preserve user's custom username, password, etc.
+            await firebaseDb.collection('vendors').doc(localV.id).update({
+              catalog: localV.catalog
+            });
             updated = true;
           }
         }
