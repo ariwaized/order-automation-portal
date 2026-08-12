@@ -2031,7 +2031,7 @@ async function handleAuthStateChange(user) {
     if (firebaseDb) {
       try {
         const userDoc = await firebaseDb.collection('users').doc(user.uid).get();
-        const isOwner = user.email.toLowerCase() === 'ariwaized@gmail.com';
+        const isOwner = user.email.toLowerCase() === 'ariwaized@gmail.com' || user.email.toLowerCase() === 'bikurim01@gmail.com';
         
         if (userDoc.exists) {
           currentUserRole = userDoc.data().role || 'viewer';
@@ -2052,7 +2052,7 @@ async function handleAuthStateChange(user) {
       } catch (err) {
         console.error("Error fetching user role:", err);
         // Fallback for owner even if database read fails
-        currentUserRole = user.email.toLowerCase() === 'ariwaized@gmail.com' ? 'admin' : 'viewer';
+        currentUserRole = (user.email.toLowerCase() === 'ariwaized@gmail.com' || user.email.toLowerCase() === 'bikurim01@gmail.com') ? 'admin' : 'viewer';
       }
     }
     
