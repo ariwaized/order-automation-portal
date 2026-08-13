@@ -1106,6 +1106,7 @@ function renderVendors() {
 
 // --- Event Listeners ---
 function setupEventListeners() {
+  console.log('DEBUG: setupEventListeners starting...');
   // Navigation
   const btnSystemAdmin = document.getElementById('btn-system-admin');
   const viewSystemAdmin = document.getElementById('view-system-admin');
@@ -1124,6 +1125,7 @@ function setupEventListeners() {
   });
 
   btnOrders.addEventListener('click', () => {
+    console.log('DEBUG: btnOrders clicked!');
     btnOrders.classList.add('active');
     btnDashboard.classList.remove('active');
     btnVendors.classList.remove('active');
