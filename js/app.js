@@ -715,12 +715,18 @@ const inputImportDb = document.getElementById('input-import-db');
 const btnResetSeed = document.getElementById('btn-reset-seed');
 
 // --- Initialization ---
-document.addEventListener('DOMContentLoaded', () => {
+function initializeApp() {
   setupDatePicker();
   checkDbStatus();
   refreshAllData();
   setupEventListeners();
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+  initializeApp();
+}
 
 // Setup Date Picker to local today
 function setupDatePicker() {
