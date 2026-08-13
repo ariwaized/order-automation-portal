@@ -719,7 +719,7 @@ function initializeApp() {
   setupDatePicker();
   checkDbStatus();
   refreshAllData();
-  setupEventListeners();
+  setupPortalEventListeners();
 }
 
 if (document.readyState === 'loading') {
@@ -1105,8 +1105,8 @@ function renderVendors() {
 }
 
 // --- Event Listeners ---
-function setupEventListeners() {
-  console.log('DEBUG: setupEventListeners starting...');
+function setupPortalEventListeners() {
+  console.log('DEBUG: setupPortalEventListeners starting...');
   // Navigation
   const btnSystemAdmin = document.getElementById('btn-system-admin');
   const viewSystemAdmin = document.getElementById('view-system-admin');
